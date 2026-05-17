@@ -72,15 +72,13 @@ export async function POST(request: Request) {
     const message = error instanceof Error ? error.message : "Unknown OpenAI generation error.";
     const isTimeout = error instanceof OpenAIPreflightTimeoutError;
 
-    return NextResponse.json(
-      {
-        mode: "error",
-        retryable: true,
-        warning: isTimeout
-          ? `${message} Retry Start preflight, or use Load completed demo if you need the fallback.`
-          : `OpenAI generation failed. ${message} Retry Start preflight, or use Load completed demo if you need the fallback.`
-      },
-      { status: isTimeout ? 504 : 502 }
-    );
+    return NextResponse.json({
+      mode: "demo",
+      run: createRunFromBrief(brief),
+      retryable: true,
+      warning: isTimeout
+        ? `${message} Preflight returned deterministic fallback output and kept assumptions separate from sourced claims.`
+        : `OpenAI generation failed. ${message} Preflight returned deterministic fallback output and kept assumptions separate from sourced claims.`
+    });
   }
 }

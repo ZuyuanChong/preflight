@@ -120,20 +120,300 @@ const redTeam = [
   "A Pivot verdict must feel useful enough that the founder still wants the artifact package."
 ];
 
-const artifacts = [
-  ["Founder Memo", "warn", 2, "# Founder Memo\n\n## Decision\nPivot from generic AI startup advisor toward AI Venture Preflight.\n\n## Why\nThe sharper value is not generating more startup content. It is forcing an evidence-backed decision before a founder spends time building.\n\n## What Must Be True\n- Founders feel enough pain from wasted build weekends.\n- They trust a report that separates sources from assumptions.\n- Red-team critique increases trust instead of reducing motivation."],
-  ["Market Brief", "warn", 2, "# Market Brief\n\n## Market Thesis\nSolo founders already use AI tools for research and drafting, but the unmet need is a disciplined pre-build decision workflow.\n\n## Evidence\n- Ralphthon Impact scoring rewards useful, polished AI-native products.\n- Codex Goals support evidence-checked autonomous build loops.\n\n## Open Questions\n- Which founder segment pays first?\n- Are substitutes good enough for one-off validation?\n- Does critique improve conversion or scare users away?"],
-  ["PRD", "pass", 0, "# Product Requirements Document\n\n## MVP\n- Intake form\n- Live sprint dashboard\n- Evidence ledger\n- Quality gate panel\n- Final blueprint\n- Artifact tabs\n\n## Non-Goals\n- Authentication\n- Multi-run collaboration\n- PPTX export\n- Full web-search automation"],
-  ["Pitch Deck Outline", "warn", 1, "# Pitch Deck Outline\n\n1. Problem: Founders build before they know what must be true.\n2. User: Solo technical founder choosing a weekend MVP.\n3. Solution: AI Venture Preflight with evidence, critique, and artifacts.\n4. Workflow: Intake, agents, evidence, quality gates, verdict, artifacts.\n5. Trust: Sources and assumptions are separated.\n6. Wedge: Pre-build decision, not post-build pitch polish.\n7. Business Model: Freemium plus paid deep reports.\n8. Risks: Crowded AI research space and willingness to pay.\n9. Roadmap: Live evidence, interview generator, workspace history.\n10. Ask: Validate with founders and ship live evidence collection."],
-  ["Unit Economics", "fail", 1, "# Unit Economics\n\n## Assumptions\n- Free demo run uses seeded or lightweight model output.\n- Paid report uses deeper model calls and web evidence collection.\n- Main cost drivers are model tokens and search calls.\n\n## Pricing Hypothesis\n- Free: one demo preflight.\n- Paid: $19-49 for a deep-dive report.\n- Team: $99/month for saved runs and collaboration.\n\n## Risk\nPricing is unvalidated until founders show willingness to pay."],
-  ["GTM Plan", "warn", 0, "# GTM Plan\n\n## First Segment\nSolo technical founders building weekend MVPs.\n\n## Channels\n- Indie hacker communities\n- Hackathon builders\n- Founder Discords and Slack groups\n- Build-in-public posts\n\n## First Experiment\nOffer 20 manual Preflight reports and measure whether founders change, pause, or sharpen their build plan."],
-  ["Red-Team Memo", "warn", 1, "# Red-Team Memo\n\n## Strongest Objection\nFounders may want confidence and momentum more than honest critique.\n\n## Competitive Risk\nGeneral AI research tools can imitate parts of the workflow unless Preflight owns the quality-gated decision layer.\n\n## Evidence Risk\nThe product loses trust if it presents assumptions as facts.\n\n## Verdict Pressure\nThe demo must prove that Pivot or Pause can feel valuable, not disappointing."]
-];
+const artifactSets = {
+  executive: [
+    ["Founder Memo", "warn", 2, "# Founder Memo\n\n## Decision\nPivot from generic AI startup advisor toward AI Venture Preflight.\n\n## Rationale\nThe sharper value is forcing an evidence-backed decision before a founder spends time building.\n\n## What Must Be True\n- Founders feel enough pain from wasted build weekends.\n- They trust a report that separates sources from assumptions.\n- Red-team critique increases trust instead of reducing motivation.\n\n## Next Move\nRun 10 founder interviews around whether a pre-build verdict changes behavior."],
+    ["Market Brief", "warn", 2, "# Market Brief\n\n## Category\nPre-build venture decision workflow.\n\n## Target Segment\nSolo technical founders and indie hackers before they spend a weekend building.\n\n## Evidence And Assumptions\nSourced claims are limited to linked event and Codex Goals context. Competitor, pricing, and willingness-to-pay claims remain assumptions.\n\n## Validation Priority\nFind whether critique and evidence labels make founders more likely to act."],
+    ["PRD", "pass", 0, "# Product Requirements Document\n\n## Personas\n- Solo technical founder deciding whether to build.\n- Reviewer checking whether the verdict is evidence-backed.\n\n## MVP Features\n- Intake form\n- Live sprint dashboard\n- Evidence ledger\n- Quality gate panel\n- Final blueprint\n- Artifact tabs with depth controls\n\n## Non-Goals\n- Authentication\n- Multi-run collaboration\n- PPTX export\n- Full web-search automation"],
+    ["Pitch Deck Outline", "warn", 1, "# Pitch Deck Outline\n\n## 10-Slide Summary\n1. Problem: Founders build before they know what must be true.\n2. User: Solo technical founder choosing a weekend MVP.\n3. Solution: AI Venture Preflight with evidence, critique, and artifacts.\n4. Workflow: Intake, agents, evidence, quality gates, verdict, artifacts.\n5. Trust: Sources and assumptions are separated.\n6. Wedge: Pre-build decision, not post-build pitch polish.\n7. Business Model: Freemium plus paid reports.\n8. Risks: Crowded AI research space and willingness to pay.\n9. Roadmap: Live evidence and interview generator.\n10. Ask: Validate with founders and ship live evidence collection."],
+    ["Unit Economics", "fail", 1, "# Unit Economics\n\n## Pricing Assumptions\nFree demo run, $19-49 deep report, and $99/month team workspace remain unvalidated hypotheses.\n\n## Cost Drivers\n- Model tokens\n- Search calls\n- Support and evidence review\n\n## Sensitivity Risks\nPricing fails if founders value speed and optimism more than pre-build critique."],
+    ["GTM Plan", "warn", 0, "# GTM Plan\n\n## ICP\nSolo technical founders building weekend MVPs.\n\n## Positioning\nBefore you build it, put it through Preflight.\n\n## First 10 Users Plan\nOffer concierge Preflight reports and measure whether founders change, pause, or sharpen their build plan."],
+    ["Red-Team Memo", "warn", 1, "# Red-Team Memo\n\n## Strongest Objections\n- Founders may want confidence and momentum more than honest critique.\n- General AI research tools can imitate parts of the workflow.\n\n## Evidence Gaps\n- Willingness to pay is unproven.\n- Direct competitors are not sourced in demo mode.\n\n## Kill Test\nKill or pause if founders will not trade time, money, referrals, or data for the report."]
+  ],
+  detailed: [
+    ["Founder Memo", "warn", 2, `# Founder Memo
+
+## Decision
+Pivot from generic AI startup advisor toward AI Venture Preflight.
+
+## Rationale
+The wedge is strong, but generic AI advice is crowded. The differentiated product is a pre-build decision system that shows evidence, assumptions, gates, critique, and aligned founder artifacts.
+
+## What Must Be True
+- Founders feel enough pain from wasted build weekends.
+- They trust a report that separates sources from assumptions.
+- Red-team critique increases trust instead of reducing motivation.
+- A narrow solo-founder workflow is valuable before broader workspace features.
+
+## Wedge
+A founder can see what would have to be true before investing a weekend in the build.
+
+## Risks
+- Founders may prefer speed and optimism over critique.
+- Existing AI research tools can imitate parts of the workflow.
+- Live evidence quality can degrade under search or API failure.
+- Pricing remains unvalidated until founders pay for pre-build confidence.
+
+## 7-Day Validation Plan
+- Day 1: Rewrite Preflight around one decision: should this weekend build happen?
+- Day 2: Recruit 10 solo technical founders with active ideas.
+- Day 3: Run five interviews about recent wasted build time.
+- Day 4: Deliver two concierge Preflight reports.
+- Day 5: Test willingness to pay for a deeper report.
+- Day 6: Score behavior change, trust, and artifact usefulness.
+- Day 7: Keep Pivot unless founders commit time, money, or warm referrals.
+
+## Interview Questions
+- What was the last idea you built before validating demand?
+- What made you decide to keep building or stop?
+- Which parts of a pre-build report would you trust?
+- Would a blunt Pivot verdict help or discourage you?
+- What would make this worth paying for before you build?
+
+## Pivot/Kill Triggers
+- Pivot if founders want only one artifact or a narrower workflow.
+- Pivot if evidence quality matters more than agent theater.
+- Kill if founders will not trade time, money, referrals, or data for the report.
+- Kill if generic chat tools are already good enough for the target segment.`],
+    ["Market Brief", "warn", 2, `# Market Brief
+
+## Category
+AI Venture Preflight is founder decision tooling: it helps a builder decide whether to proceed, pivot, pause, or kill before investing build time.
+
+## Target Segment
+Solo technical founders and indie hackers in global English-speaking startup communities before they spend a weekend building.
+
+## Substitutes
+- Manual research, spreadsheets, notes, and founder instinct.
+- Generic AI chat and research tools.
+- Startup templates, pitch deck tools, accelerators, and community feedback.
+- Consultant or advisor conversations.
+
+## Evidence
+- Ralphthon Impact context supports useful, polished AI-native products.
+- Codex Goals context supports scoped autonomous work with verification.
+- Competitor, pricing, and willingness-to-pay claims are assumptions until live evidence is added.
+
+## Assumptions
+- Solo founders value pre-build decision confidence.
+- Separating sources from assumptions increases trust.
+- Red-team critique makes the report feel more useful.
+- A paid deep report can convert from a free demo run.
+
+## Market Risks
+- The category can collapse into generic AI advice.
+- Founder optimism may beat disciplined critique.
+- Search/API failures can weaken trust.
+- Substitutes may be good enough for casual validation.
+
+## Validation Plan
+- Interview 20 founders with current build decisions.
+- Ask what substitute they used before showing Preflight.
+- Measure whether the report changes build, pivot, or pause behavior.
+- Replace assumptions with sourced evidence before claiming market proof.`],
+    ["PRD", "pass", 0, `# Product Requirements Document
+
+## Personas
+- Solo technical founder deciding whether to build.
+- Skeptical reviewer checking evidence quality.
+- Future teammate comparing artifacts against the verdict.
+
+## Workflows
+- Intake captures idea, customer, geography, and business model.
+- Sprint shows specialist agents and logs.
+- Blueprint reveals verdict, scorecard, wedge, risks, and next actions.
+- Evidence ledger separates source-backed claims from assumptions.
+- Artifacts render executive or detailed founder outputs.
+
+## MVP Features
+- Deterministic demo mode.
+- Optional server-side live generation.
+- Evidence ledger.
+- Quality gates.
+- Red-team critique.
+- Seven artifact tabs.
+- Output depth controls.
+
+## Non-Goals
+- Browser-side API keys.
+- Authentication and billing.
+- Database-backed workspaces.
+- PPTX/PDF export before HTML artifacts work.
+
+## Acceptance Criteria
+- Demo works without API keys.
+- Live API failures return deterministic fallback.
+- All artifact tabs open in both depth modes.
+- Evidence and assumptions remain visually separate.
+- Mobile has no horizontal overflow.
+
+## Metrics
+- Sprint starts per intake.
+- Artifact tabs opened per run.
+- Users who can name the riskiest assumption.
+- Interviews or validation actions completed within seven days.
+- Paid report intent or prepayment.
+
+## Edge Cases
+- Missing business model becomes an assumption.
+- Invalid source URLs remain assumptions.
+- Long artifact text wraps.
+- Live API timeout is nonfatal.
+- Generic claims trigger quality gates.`],
+    ["Pitch Deck Outline", "warn", 1, `# Pitch Deck Outline
+
+### Slide 1: Problem
+- Founders build before they know what must be true.
+- Wasted weekends create opportunity cost and false momentum.
+Speaker notes: Lead with the cost of building too early.
+
+### Slide 2: Target User
+- Solo technical founders and indie hackers.
+- Trigger: deciding whether a weekend MVP deserves time.
+Speaker notes: Keep the first user narrow and reachable.
+
+### Slide 3: Substitutes
+- Generic AI chat, manual research, templates, advisors, and community feedback.
+- Most substitutes do not quality-gate evidence.
+Speaker notes: Treat competitors as substitute categories until sourced.
+
+### Slide 4: Solution
+- AI Venture Preflight returns a verdict, evidence ledger, critique, and artifacts.
+- It helps decide before the build.
+Speaker notes: Do not pitch this as a chatbot.
+
+### Slide 5: Wedge
+- Pre-build decision quality, not post-build pitch polish.
+- Sources and assumptions stay separate.
+Speaker notes: The trust layer is the wedge.
+
+### Slide 6: Workflow
+- Intake, sprint, evidence, quality gates, verdict, artifacts.
+- Depth controls fit founder and detailed review modes.
+Speaker notes: Show the product path in under three minutes.
+
+### Slide 7: Trust
+- Quality gates catch unsupported numbers and vague advice.
+- Red team makes the output more credible.
+Speaker notes: Explain why critique creates confidence.
+
+### Slide 8: Business Model
+- Free demo run.
+- Paid deep-dive report.
+- Team workspace later.
+Speaker notes: Pricing remains a hypothesis.
+
+### Slide 9: Risks
+- Founders may prefer optimism.
+- Generic tools may imitate the workflow.
+- Evidence quality can break trust.
+Speaker notes: State what could kill the idea.
+
+### Slide 10: Ask
+- Interview founders.
+- Validate willingness to pay.
+- Add live evidence collection.
+Speaker notes: End with the next seven days.`],
+    ["Unit Economics", "fail", 1, `# Unit Economics
+
+## Pricing Assumptions
+- Free: one demo preflight.
+- Paid: $19-49 for a deeper evidence-backed report.
+- Team: $99/month for saved runs and collaboration.
+- Pricing is unvalidated until founders pay before building.
+
+## Cost Drivers
+- Model tokens and retries.
+- Live search/evidence collection.
+- Support for confusing or sensitive claims.
+- Artifact export and workspace infrastructure.
+- Founder education around evidence quality.
+
+## Simple Scenarios
+- Conservative: many free runs, low paid conversion, acceptable only if model cost stays low.
+- Base: serious founders buy a paid report after the free verdict changes behavior.
+- Upside: repeat builders and teams pay monthly for saved runs.
+- Downside: users enjoy free critique but do not pay.
+
+## Sensitivity Risks
+- Gross margin falls if live search retries are frequent.
+- Conversion falls if founders dislike blunt verdicts.
+- Support costs rise if assumptions are mistaken for sourced claims.
+- Team pricing fails without repeat usage.`],
+    ["GTM Plan", "warn", 0, `# GTM Plan
+
+## ICP
+Solo technical founders and indie hackers deciding whether to spend a weekend building.
+
+## Positioning
+Before you build it, put it through Preflight: a verdict, evidence ledger, red team, and founder artifacts from one sprint.
+
+## Channels
+- Indie hacker communities.
+- Hackathon builders.
+- Founder Discords and Slack groups.
+- Build-in-public teardown posts.
+- Accelerator and maker community partners.
+
+## First 10 Users Plan
+- Recruit 10 founders with active ideas.
+- Run concierge reports manually if needed.
+- Ask each user what changed after the verdict.
+- Track which artifact they share or ignore.
+- Ask for payment, referral, or a second run.
+
+## Experiments
+- Blunt Pivot/Pause verdict versus optimistic coaching.
+- Evidence labels versus unlabeled advice.
+- Founder memo first versus pitch deck first.
+- One-time paid report versus subscription waitlist.
+
+## Messaging
+- Before you build it, put it through Preflight.
+- Know what must be true before the weekend.
+- Sources and assumptions stay separate.
+- A red team before you spend build time.
+
+## Success Metrics
+- 10 qualified runs.
+- 7 users open three or more artifacts.
+- 5 users name the riskiest assumption.
+- 3 users complete a validation action.
+- 2 users commit money, referrals, or repeat usage.`],
+    ["Red-Team Memo", "warn", 1, `# Red-Team Memo
+
+## Strongest Objections
+- Founders may want confidence and momentum more than honest critique.
+- General AI research tools can imitate the workflow.
+- Willingness to pay is unproven.
+- The product loses trust if assumptions look sourced.
+
+## Failure Modes
+- Preflight becomes a generic advice generator.
+- Artifacts feel polished but do not change behavior.
+- Live generation adds confident language without evidence.
+- The ICP stays too broad for useful interviews.
+
+## Evidence Gaps
+- Direct competitors and substitute pricing need real sources.
+- Willingness to pay needs behavior, not opinions.
+- The value of a Pivot verdict needs proof.
+- Search/API reliability needs stress testing.
+
+## Ways To Disprove The Idea
+- Founders cannot recall a painful wasted-build moment.
+- Users refuse to trade time, money, referrals, or data for a report.
+- Evidence labels do not change trust.
+- Generic chat tools are good enough.
+- The 7-day validation plan produces no behavior change.`]
+  ]
+};
 
 let runStatus = "idle";
 let currentStep = 0;
 let timer = null;
 let activeArtifact = 0;
+let artifactDepth = "detailed";
 
 const $ = (id) => document.getElementById(id);
 
@@ -271,6 +551,7 @@ function renderMarkdown(markdown) {
     .map((line) => {
       if (line.startsWith("# ")) return `<h3>${line.slice(2)}</h3>`;
       if (line.startsWith("## ")) return `<h4>${line.slice(3)}</h4>`;
+      if (line.startsWith("### ")) return `<h5>${line.slice(4)}</h5>`;
       if (line.startsWith("- ") || /^\d+\./.test(line)) return `<li>${line.replace("- ", "")}</li>`;
       if (!line.trim()) return '<span class="markdown-space"></span>';
       return `<p>${line}</p>`;
@@ -279,6 +560,16 @@ function renderMarkdown(markdown) {
 }
 
 function renderArtifacts() {
+  const artifacts = artifactSets[artifactDepth];
+  $("depthToggle").innerHTML = [
+    ["executive", "Executive Summary"],
+    ["detailed", "Detailed Report"]
+  ]
+    .map(
+      ([value, label]) => `<button class="${artifactDepth === value ? "active" : ""}" type="button" data-depth="${value}">${label}</button>`
+    )
+    .join("");
+
   $("artifactTabs").innerHTML = artifacts
     .map(
       ([title], index) => `<button class="${index === activeArtifact ? "active" : ""}" role="tab" aria-selected="${index === activeArtifact}" data-artifact="${index}">${title}</button>`
@@ -292,6 +583,12 @@ function renderArtifacts() {
   document.querySelectorAll("[data-artifact]").forEach((button) => {
     button.addEventListener("click", () => {
       activeArtifact = Number(button.getAttribute("data-artifact"));
+      renderArtifacts();
+    });
+  });
+  document.querySelectorAll("[data-depth]").forEach((button) => {
+    button.addEventListener("click", () => {
+      artifactDepth = button.getAttribute("data-depth");
       renderArtifacts();
     });
   });

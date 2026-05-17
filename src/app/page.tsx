@@ -99,6 +99,7 @@ export default function Home() {
     }),
     [run.evidence, run.qualityIssues]
   );
+  const evidenceIds = useMemo(() => run.evidence.map((item) => item.id), [run.evidence]);
 
   async function startSprint() {
     setIsGenerating(true);
@@ -237,7 +238,12 @@ export default function Home() {
 
       <section className="content-grid lower-grid">
         <RedTeamPanel run={run} />
-        <ArtifactTabs artifacts={run.artifacts} />
+        <ArtifactTabs
+          artifacts={run.artifacts}
+          brief={run.brief}
+          verdict={run.finalVerdict}
+          evidenceIds={evidenceIds}
+        />
       </section>
     </main>
   );

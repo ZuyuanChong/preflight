@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import type { Artifact } from "@/types/preflight";
+import { useMemo, useState } from "react";
+import { buildArtifacts } from "@/lib/artifacts";
+import type { Artifact, ArtifactDepth, FinalVerdict, VentureBrief } from "@/types/preflight";
 
 function renderMarkdown(markdown: string) {
   return markdown.split("\n").map((line, index) => {
@@ -10,6 +11,9 @@ function renderMarkdown(markdown: string) {
     }
     if (line.startsWith("## ")) {
       return <h4 key={index}>{line.replace("## ", "")}</h4>;
+    }
+    if (line.startsWith("### ")) {
+      return <h5 key={index}>{line.replace("### ", "")}</h5>;
     }
     if (line.startsWith("- ")) {
       return <li key={index}>{line.replace("- ", "")}</li>;
@@ -24,9 +28,26 @@ function renderMarkdown(markdown: string) {
   });
 }
 
-export function ArtifactTabs({ artifacts }: { artifacts: Artifact[] }) {
+interface ArtifactTabsProps {
+  artifacts: Artifact[];
+  brief: VentureBrief;
+  verdict: FinalVerdict;
+  evidenceIds: string[];
+}
+
+const depthOptions: Array<{ value: ArtifactDepth; label: string }> = [
+  { value: "executive", label: "Executive Summary" },
+  { value: "detailed", label: "Detailed Report" }
+];
+
+export function ArtifactTabs({ artifacts, brief, verdict, evidenceIds }: ArtifactTabsProps) {
   const [activeId, setActiveId] = useState(artifacts[0]?.id);
-  const active = artifacts.find((artifact) => artifact.id === activeId) ?? artifacts[0];
+  const [depth, setDepth] = useState<ArtifactDepth>("detailed");
+  const renderedArtifacts = useMemo(
+    () => buildArtifacts(brief, verdict, evidenceIds, { depth }),
+    [brief, depth, evidenceIds, verdict]
+  );
+  const active = renderedArtifacts.find((artifact) => artifact.id === activeId) ?? renderedArtifacts[0];
 
   return (
     <section className="panel artifacts-panel" aria-labelledby="artifacts-heading">
@@ -35,10 +56,22 @@ export function ArtifactTabs({ artifacts }: { artifacts: Artifact[] }) {
           <p className="section-label">Founder artifacts</p>
           <h2 id="artifacts-heading">Aligned outputs</h2>
         </div>
+        <div className="depth-toggle" role="group" aria-label="Output depth">
+          {depthOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={depth === option.value ? "active" : ""}
+              onClick={() => setDepth(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="tabs" role="tablist" aria-label="Artifact tabs">
-        {artifacts.map((artifact) => (
+        {renderedArtifacts.map((artifact) => (
           <button
             key={artifact.id}
             className={artifact.id === active.id ? "active" : ""}

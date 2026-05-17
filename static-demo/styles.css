@@ -622,6 +622,27 @@ button:disabled {
   margin-bottom: 14px;
 }
 
+.depth-toggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.depth-toggle button {
+  background: #fff;
+  border-color: var(--line-strong);
+  color: var(--muted);
+  min-height: 34px;
+  padding: 8px 10px;
+}
+
+.depth-toggle button.active {
+  background: var(--text);
+  border-color: var(--text);
+  color: #fff;
+}
+
 .tabs button {
   background: #fff;
   border-color: var(--line-strong);
@@ -660,6 +681,12 @@ button:disabled {
 
 .markdown-body h4 {
   color: var(--text);
+}
+
+.markdown-body h5 {
+  color: var(--accent-dark);
+  font-size: 14px;
+  margin: 18px 0 7px;
 }
 
 .markdown-body p,

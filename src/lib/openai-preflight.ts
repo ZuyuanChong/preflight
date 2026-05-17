@@ -57,12 +57,16 @@ Rules:
 - Do not reuse the seeded Preflight demo content unless the submitted idea is actually about Preflight.
 - Do not invent fake citations or fake URLs. If you are not certain a URL is real, set kind to "assumption" and leave sourceUrl, sourceTitle, and freshness as empty strings.
 - Use "source" evidence only for claims with a real URL. Otherwise use "assumption".
+- Separate sourced claims from assumptions in every evidence item and in the wording of the final verdict. Never imply an assumption is proven.
 - Quality issues should call out missing citations, unsupported numbers, vague claims, contradictions, weak assumptions, and overclaims in this specific venture.
 - Evidence must have stable lowercase ids.
 - For quality issue artifactId, use one of: artifact-founder-memo, artifact-market-brief, artifact-prd, artifact-pitch-deck, artifact-unit-economics, artifact-gtm, artifact-red-team.
-- Do not generate the final artifacts. The application will format artifacts locally from your blueprint.
+- Do not generate the final artifacts. The application will format artifacts locally from your blueprint, so your JSON must contain concrete source material for founder-ready deliverables.
+- Write for a founder deciding what to do next, not for a generic advice blog.
+- Include at least 4 specific assumptions, 4 unknowns, 4 next actions, 4 risks, 4 evidence items, 5 quality issues, and 5 red-team objections.
+- Make the blueprint rich enough to support these artifact sections: Founder Memo decision, rationale, what must be true, wedge, risks, 7-day validation plan, interview questions, pivot/kill triggers; Market Brief category, target segment, substitutes, evidence, assumptions, market risks, validation plan; PRD personas, workflows, MVP features, non-goals, acceptance criteria, metrics, edge cases; Pitch Deck 10 slides; Unit Economics pricing assumptions, cost drivers, scenarios, sensitivity risks; GTM ICP, positioning, channels, first 10 users, experiments, messaging, metrics; Red-Team strongest objections, failure modes, evidence gaps, disproof tests.
 - Make a hard decision: Proceed, Pivot, Pause, or Kill. Avoid generic optimism.
-- Keep markdown readable and concise.`;
+- Be concrete about the user's segment, substitute workflow, buying trigger, and validation behavior.`;
 
 const PRELIGHT_SCHEMA = {
   type: "object",
@@ -88,12 +92,13 @@ const PRELIGHT_SCHEMA = {
         businessModel: { type: "string" },
         problem: { type: "string" },
         solution: { type: "string" },
-        assumptions: { type: "array", items: { type: "string" } },
-        unknowns: { type: "array", items: { type: "string" } }
+        assumptions: { type: "array", minItems: 4, items: { type: "string" } },
+        unknowns: { type: "array", minItems: 4, items: { type: "string" } }
       }
     },
     agentSummaries: {
       type: "array",
+      minItems: 9,
       items: {
         type: "object",
         additionalProperties: false,
@@ -109,6 +114,7 @@ const PRELIGHT_SCHEMA = {
     },
     evidence: {
       type: "array",
+      minItems: 4,
       items: {
         type: "object",
         additionalProperties: false,
@@ -128,6 +134,7 @@ const PRELIGHT_SCHEMA = {
     },
     qualityIssues: {
       type: "array",
+      minItems: 5,
       items: {
         type: "object",
         additionalProperties: false,
@@ -175,12 +182,13 @@ const PRELIGHT_SCHEMA = {
         decision: { type: "string", enum: VERDICTS },
         rationale: { type: "string" },
         strongestWedge: { type: "string" },
-        nextActions: { type: "array", items: { type: "string" } },
-        risks: { type: "array", items: { type: "string" } }
+        nextActions: { type: "array", minItems: 4, items: { type: "string" } },
+        risks: { type: "array", minItems: 4, items: { type: "string" } }
       }
     },
     redTeamObjections: {
       type: "array",
+      minItems: 5,
       items: { type: "string" }
     }
   }
@@ -305,7 +313,7 @@ async function requestGeneratedPreflightWithModel(
             schema: PRELIGHT_SCHEMA
           }
         },
-        max_output_tokens: 4500
+        max_output_tokens: 7000
       }),
       signal: controller.signal
     });
