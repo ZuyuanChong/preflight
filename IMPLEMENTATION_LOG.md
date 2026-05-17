@@ -806,3 +806,49 @@ Known notes:
 
 - In-app browser screenshot capture timed out during this session, so verification used DOM state, URL hash, scroll position, and browser interaction evidence.
 - Dev server Fast Refresh performed one full reload during editing after a hot-update 404; the page reloaded successfully.
+
+## Specialized Agent Capabilities And Logs - 2026-05-18
+
+What changed:
+
+- Added first-class specialized capability fields to the multi-agent model:
+  - LLM profile per agent.
+  - Capability tags per agent.
+  - Typed role-specific tools with availability labels.
+  - Inspectable per-agent activity logs.
+- Expanded agent tool coverage:
+  - Web search: Market Evidence and Growth Strategist.
+  - Document review: Product Strategy, Quality Control, and Artifact Producer.
+  - Data analysis: Business Modeler.
+  - Research synthesis: Venture Framer, Customer and ICP, Growth Strategist, and Red Team Critic.
+  - Technical debugging: Product Strategy.
+- Added an operating architecture `Specialized tool access` section.
+- Added an `Agent activity logs` section that shows task handled, tools used, reasoning summary, output, and handoff target for each agent.
+- Mirrored capability and activity-log rendering in the static fallback.
+- Updated the multi-agent contract test so it fails if tools, capabilities, web search, data analysis, document review, or activity logs disappear.
+
+Verification:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run test:multi-agent` passed: 2/2 tests.
+- `node --check static-demo\app.js` passed.
+- `npm.cmd run build` passed. Build emitted nonfatal Webpack cache snapshot warnings after route generation.
+- `npm.cmd run test:artifacts` passed: 2/2 tests.
+- `npm.cmd run test:scorecard` passed: 3/3 tests.
+- Local dev server ran at `http://127.0.0.1:3137`.
+- Browser verification:
+  - Page title was `Preflight`.
+  - Agents rail opened the architecture panel.
+  - Capability matrix rendered 11 agent cards.
+  - Agent activity console rendered 11 activity log cards.
+  - Web-search tools were visible for search-capable agents.
+  - Data-analysis and document-review tools were visible for the relevant agents.
+  - Agent LLM profiles were visible in the ownership section.
+  - Activity log content included task handled, tools used, reasoning summary, output, and handoff.
+  - Browser console returned no warning or error logs.
+  - Narrow viewport check reported `clientWidth` 505 and `scrollWidth` 505, with no horizontal overflow.
+
+Known notes:
+
+- Live web search remains an optional server-side capability. Demo mode uses seeded verified citations and labels unsourced claims as assumptions.
+- The activity logs expose reasoning summaries, not hidden chain-of-thought.

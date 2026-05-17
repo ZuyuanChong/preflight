@@ -629,6 +629,133 @@ button:disabled {
   font-size: 13px;
 }
 
+.contract-group article em,
+.tool-matrix article p,
+.agent-activity-card summary small {
+  color: #40515b;
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.45;
+}
+
+.capability-chip-list,
+.tool-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.capability-chip,
+.tool-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #f7fafb;
+  color: #34454f;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 6px 8px;
+}
+
+.tool-access-card,
+.activity-log-section {
+  margin-top: 14px;
+}
+
+.tool-matrix {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tool-matrix article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 11px;
+}
+
+.tool-matrix article > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.tool-matrix article > div:first-child span,
+.agent-activity-body > div > span {
+  color: var(--accent-dark);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.agent-activity-list {
+  display: grid;
+  gap: 9px;
+}
+
+.agent-activity-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.agent-activity-card summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+  padding: 11px;
+}
+
+.agent-activity-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.agent-activity-card summary > span {
+  display: grid;
+  gap: 3px;
+}
+
+.agent-activity-card summary em {
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  padding: 6px 8px;
+  text-transform: uppercase;
+}
+
+.agent-activity-body {
+  display: grid;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding: 12px;
+}
+
+.agent-activity-body p {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.agent-activity-body ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.agent-activity-body li {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  margin-bottom: 4px;
+}
+
 .workflow-list {
   display: grid;
   gap: 10px;
@@ -1356,6 +1483,7 @@ button:disabled {
   .content-grid,
   .lower-grid,
   .architecture-grid,
+  .tool-matrix,
   .review-finding-grid {
     grid-template-columns: 1fr;
   }

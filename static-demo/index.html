@@ -128,8 +128,8 @@
         <div class="collapsible-body">
           <div class="metric-grid multi-agent-metrics">
             <div><span>Agents</span><strong>11</strong></div>
-            <div><span>Handoffs</span><strong>5</strong></div>
-            <div><span>Shared memory</span><strong>4</strong></div>
+            <div><span>Tool profiles</span><strong>23</strong></div>
+            <div><span>Inspectable logs</span><strong>11</strong></div>
             <div><span>Revision loops</span><strong>1</strong></div>
           </div>
           <div class="architecture-grid">
@@ -158,6 +158,24 @@
               </div>
             </details>
           </div>
+          <details class="architecture-card collapsible-card tool-access-card">
+            <summary class="architecture-heading collapsible-card-summary">
+              <span><h3>Specialized tool access</h3><small>Role-specific LLM capabilities</small></span>
+              <span class="collapse-indicator" aria-hidden="true"></span>
+            </summary>
+            <div class="collapsible-card-body">
+              <div class="tool-matrix" id="agentCapabilityMatrix"></div>
+            </div>
+          </details>
+          <details class="architecture-card collapsible-card activity-log-section">
+            <summary class="architecture-heading collapsible-card-summary">
+              <span><h3>Agent activity logs</h3><small>Inspectable independent LLM work</small></span>
+              <span class="collapse-indicator" aria-hidden="true"></span>
+            </summary>
+            <div class="collapsible-card-body">
+              <div class="agent-activity-list" id="agentActivityLogs"></div>
+            </div>
+          </details>
           <details class="architecture-card collapsible-card review-loop-card">
             <summary class="architecture-heading collapsible-card-summary">
               <span><h3>Quality-control loop</h3><small>Approve or revise</small></span>

@@ -81,6 +81,21 @@ test("multi-agent contracts include required ownership roles", () => {
   assert.equal(new Set(AGENT_CONTRACTS.map((agent) => agent.id)).size, AGENT_CONTRACTS.length);
   assert.ok(AGENT_CONTRACTS.every((agent) => agent.mustNotDo.length > 0));
   assert.ok(AGENT_CONTRACTS.every((agent) => agent.successCriteria.length > 0));
+  assert.ok(AGENT_CONTRACTS.every((agent) => agent.llmProfile.length > 0));
+  assert.ok(AGENT_CONTRACTS.every((agent) => agent.capabilities.length > 0));
+  assert.ok(AGENT_CONTRACTS.every((agent) => agent.tools.length > 0));
+  assert.ok(
+    AGENT_CONTRACTS.some((agent) => agent.tools.some((tool) => tool.category === "web_search")),
+    "at least one agent needs web search capability"
+  );
+  assert.ok(
+    AGENT_CONTRACTS.some((agent) => agent.tools.some((tool) => tool.category === "data_analysis")),
+    "at least one agent needs data analysis capability"
+  );
+  assert.ok(
+    AGENT_CONTRACTS.some((agent) => agent.tools.some((tool) => tool.category === "document_review")),
+    "at least one agent needs document review capability"
+  );
 });
 
 test("multi-agent system exposes workflow, handoffs, memory, and review loop", () => {
@@ -97,6 +112,10 @@ test("multi-agent system exposes workflow, handoffs, memory, and review loop", (
   assert.equal(system.handoffs.some((handoff) => handoff.status === "revision_requested"), true);
   assert.equal(system.memory.some((item) => item.visibility === "shared"), true);
   assert.equal(system.reviewFindings.some((finding) => finding.status === "revision_required"), true);
+  assert.equal(system.activityLogs.length, AGENT_CONTRACTS.length);
+  assert.ok(system.activityLogs.every((log) => log.task && log.output));
+  assert.ok(system.activityLogs.every((log) => log.toolsUsed.length > 0));
+  assert.ok(system.activityLogs.every((log) => log.reasoningSummary.length > 0));
   assert.ok(system.communicationProtocol.includes("Handoff From"));
   assert.ok(system.finalOutputRules.some((rule) => rule.includes("assumptions")));
 });

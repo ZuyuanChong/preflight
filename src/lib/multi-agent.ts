@@ -1,6 +1,8 @@
 import type {
+  AgentActivityLog,
   AgentContract,
   AgentRun,
+  AgentTool,
   EvidenceItem,
   FinalVerdict,
   MultiAgentSystem,
@@ -9,12 +11,51 @@ import type {
   VentureBrief
 } from "@/types/preflight";
 
+function tool(
+  id: string,
+  label: string,
+  category: AgentTool["category"],
+  purpose: string,
+  availability: AgentTool["availability"] = "always"
+): AgentTool {
+  return { id, label, category, purpose, availability };
+}
+
+const TOOLS = {
+  runPlanner: tool("run-planner", "Run planner", "orchestration", "Breaks the founder request into ordered agent work."),
+  sharedMemory: tool("shared-memory", "Shared memory", "memory", "Stores assumptions, preferences, decisions, and reviewer state."),
+  conflictResolver: tool("conflict-resolver", "Conflict resolver", "orchestration", "Compares agent outputs and records the resolution path."),
+  briefParser: tool("brief-parser", "Brief parser", "research_synthesis", "Extracts idea, customer, market, business model, assumptions, and unknowns."),
+  clarificationScanner: tool("clarification-scanner", "Clarification scanner", "quality_review", "Identifies missing inputs that would block a useful run."),
+  hypothesisMapper: tool("hypothesis-mapper", "Hypothesis mapper", "research_synthesis", "Turns a brief into testable assumptions and specialist questions."),
+  webSearch: tool("web-search", "Web search", "web_search", "Finds external sources, market signals, substitutes, and competitor context.", "optional_live"),
+  seededEvidence: tool("seeded-evidence", "Seeded evidence", "web_search", "Uses verified demo citations when live search is unavailable.", "demo_seeded"),
+  sourceVerifier: tool("source-verifier", "Source verifier", "quality_review", "Keeps URL-backed claims separate from assumptions."),
+  customerResearch: tool("customer-research", "Customer research synthesis", "research_synthesis", "Synthesizes ICP, pain, buying trigger, and interview questions."),
+  interviewPlanner: tool("interview-planner", "Interview planner", "research_synthesis", "Produces customer-discovery questions and validation prompts."),
+  prdReviewer: tool("prd-reviewer", "PRD reviewer", "document_review", "Checks MVP scope, workflows, acceptance criteria, and non-goals."),
+  feasibilityDebugger: tool("feasibility-debugger", "Technical feasibility debugger", "technical_debugging", "Flags UX, implementation, and demo reliability risks."),
+  unitEconomics: tool("unit-economics-sheet", "Unit economics worksheet", "data_analysis", "Models pricing assumptions, cost drivers, and sensitivity risk."),
+  pricingSensitivity: tool("pricing-sensitivity", "Pricing sensitivity analysis", "data_analysis", "Stress-tests monetization claims and unsupported numbers."),
+  channelResearch: tool("channel-research", "Channel research", "web_search", "Checks channel/substitute context when live search is available.", "optional_live"),
+  experimentPlanner: tool("experiment-planner", "Experiment planner", "research_synthesis", "Turns risks into validation experiments and first-user actions."),
+  contradictionScanner: tool("contradiction-scanner", "Contradiction scanner", "quality_review", "Finds conflicts between evidence, claims, verdict, and artifacts."),
+  disproofPlanner: tool("disproof-planner", "Disproof test planner", "research_synthesis", "Creates kill tests and red-team objections."),
+  citationAudit: tool("citation-audit", "Citation audit", "document_review", "Checks that artifact claims map back to evidence IDs."),
+  artifactConsistency: tool("artifact-consistency", "Artifact consistency checker", "quality_review", "Verifies that all outputs share one verdict and risk posture."),
+  documentAssembler: tool("document-assembler", "Document assembler", "artifact_generation", "Formats approved blueprint material into founder artifacts."),
+  reportReviewer: tool("report-reviewer", "Report reviewer", "document_review", "Checks final reports for clarity, uncertainty, and source labeling.")
+};
+
 export const AGENT_CONTRACTS: AgentContract[] = [
   {
     id: "agent-managing-partner",
     agentName: "Managing Partner",
     agentType: "orchestrator",
+    llmProfile: "Orchestration LLM focused on planning, dispatch, conflict resolution, and final decision control.",
     purpose: "Own the full Preflight workflow, dispatch specialists, resolve conflicts, and approve the final verdict.",
+    capabilities: ["run orchestration", "conflict resolution", "decision synthesis", "shared memory control"],
+    tools: [TOOLS.runPlanner, TOOLS.sharedMemory, TOOLS.conflictResolver],
     coreResponsibilities: [
       "Interpret the founder request and decide the run plan.",
       "Assign work to specialist, review, and finalization agents.",
@@ -45,7 +86,10 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     id: "agent-intake",
     agentName: "Intake and Clarification",
     agentType: "intake",
+    llmProfile: "Intake LLM focused on extracting founder intent, preserving constraints, and deciding whether clarification is required.",
     purpose: "Convert the founder's raw idea into a usable venture brief without evaluating the business.",
+    capabilities: ["brief parsing", "clarification detection", "user preference capture"],
+    tools: [TOOLS.briefParser, TOOLS.clarificationScanner, TOOLS.sharedMemory],
     coreResponsibilities: [
       "Extract idea, target customer, geography, business model, problem, and solution.",
       "Identify missing critical details.",
@@ -69,7 +113,10 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     id: "agent-framer",
     agentName: "Venture Framer",
     agentType: "specialist",
+    llmProfile: "Research-framing LLM focused on hypotheses, unknowns, assumption registers, and specialist task design.",
     purpose: "Turn the venture brief into hypotheses, assumptions, unknowns, and evaluation criteria.",
+    capabilities: ["hypothesis framing", "research synthesis", "assumption mapping"],
+    tools: [TOOLS.hypothesisMapper, TOOLS.sharedMemory],
     coreResponsibilities: [
       "Identify the problem, solution, critical assumptions, and unknowns.",
       "Define the questions each specialist must answer.",
@@ -89,7 +136,10 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     id: "agent-market",
     agentName: "Market Evidence",
     agentType: "specialist",
+    llmProfile: "Evidence LLM with web-search capability for market signals, source verification, and assumption labeling.",
     purpose: "Separate sourced market claims from assumptions and evidence gaps.",
+    capabilities: ["web search", "source verification", "market evidence review", "competitor/substitute mapping"],
+    tools: [TOOLS.webSearch, TOOLS.seededEvidence, TOOLS.sourceVerifier],
     coreResponsibilities: [
       "Collect or label market signals, substitutes, competitor categories, and demand claims.",
       "Attach URLs only when the source is known to be real.",
@@ -106,7 +156,10 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     id: "agent-customer",
     agentName: "Customer and ICP",
     agentType: "specialist",
+    llmProfile: "Customer-research LLM focused on ICP definition, pain analysis, buyer workflow, and interview design.",
     purpose: "Define the target customer, painful workflow, buying trigger, objections, and interview plan.",
+    capabilities: ["customer research synthesis", "interview planning", "buyer workflow analysis"],
+    tools: [TOOLS.customerResearch, TOOLS.interviewPlanner, TOOLS.sharedMemory],
     coreResponsibilities: [
       "Narrow the ICP to a testable segment.",
       "Describe pain intensity, workflow, buyer, objections, and validation questions.",
@@ -123,7 +176,10 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     id: "agent-product",
     agentName: "Product Strategy",
     agentType: "specialist",
+    llmProfile: "Product and technical-analysis LLM focused on MVP scope, PRD quality, and feasibility debugging.",
     purpose: "Define the MVP, user journey, feature priorities, non-goals, and feasibility risks.",
+    capabilities: ["document review", "technical debugging", "MVP scoping", "acceptance-criteria analysis"],
+    tools: [TOOLS.prdReviewer, TOOLS.feasibilityDebugger],
     coreResponsibilities: [
       "Scope the minimum product surface needed for the decision workflow.",
       "Separate MVP features from later infrastructure.",
@@ -140,7 +196,10 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     id: "agent-business",
     agentName: "Business Modeler",
     agentType: "specialist",
+    llmProfile: "Data-analysis LLM focused on pricing, unit economics, cost drivers, and sensitivity risk.",
     purpose: "Model pricing, unit economics assumptions, cost drivers, and monetization risk.",
+    capabilities: ["data analysis", "pricing sensitivity", "unit economics modeling"],
+    tools: [TOOLS.unitEconomics, TOOLS.pricingSensitivity],
     coreResponsibilities: [
       "Create pricing hypotheses without presenting them as validation.",
       "List cost drivers and sensitivity risks.",
@@ -157,7 +216,10 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     id: "agent-growth",
     agentName: "Growth Strategist",
     agentType: "specialist",
+    llmProfile: "Growth-research LLM with optional web search for channels, launch experiments, and first-user strategy.",
     purpose: "Create the launch path, validation experiments, channels, messaging, and first-user plan.",
+    capabilities: ["web search", "research synthesis", "experiment planning", "channel analysis"],
+    tools: [TOOLS.channelResearch, TOOLS.experimentPlanner, TOOLS.sharedMemory],
     coreResponsibilities: [
       "Pick channels that match the ICP and trigger.",
       "Define validation experiments that can change the verdict.",
@@ -174,7 +236,10 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     id: "agent-red-team",
     agentName: "Red Team Critic",
     agentType: "review",
+    llmProfile: "Adversarial review LLM focused on contradictions, failure modes, substitute threats, and disproof tests.",
     purpose: "Attack the venture thesis before the final verdict is approved.",
+    capabilities: ["contradiction analysis", "research synthesis", "risk review", "disproof testing"],
+    tools: [TOOLS.contradictionScanner, TOOLS.disproofPlanner, TOOLS.sourceVerifier],
     coreResponsibilities: [
       "Challenge urgency, willingness to pay, moat, substitutes, and evidence quality.",
       "Identify failure modes and disproof tests.",
@@ -191,7 +256,10 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     id: "agent-quality",
     agentName: "Quality Control",
     agentType: "review",
+    llmProfile: "Quality-control LLM focused on document review, citation audit, consistency checks, and revision requests.",
     purpose: "Review all outputs for accuracy, completeness, consistency, and usefulness.",
+    capabilities: ["document review", "citation audit", "quality review", "artifact consistency"],
+    tools: [TOOLS.citationAudit, TOOLS.artifactConsistency, TOOLS.reportReviewer],
     coreResponsibilities: [
       "Check unsupported claims, fake citations, duplicate work, contradictions, and weak reasoning.",
       "Send revision requests to the responsible agent.",
@@ -211,7 +279,10 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     id: "agent-artifact",
     agentName: "Artifact Producer",
     agentType: "finalization",
+    llmProfile: "Finalization LLM focused on assembling approved claims into consistent founder-ready documents.",
     purpose: "Package the approved blueprint into founder-ready artifacts without adding new claims.",
+    capabilities: ["artifact generation", "document review", "citation mapping"],
+    tools: [TOOLS.documentAssembler, TOOLS.citationAudit, TOOLS.reportReviewer],
     coreResponsibilities: [
       "Format memo, market brief, PRD, deck outline, unit economics, GTM plan, and red-team memo.",
       "Use the same verdict, assumptions, and evidence IDs across every artifact.",
@@ -244,6 +315,143 @@ export const agentSprintLogLines = AGENT_CONTRACTS.map((agent) => {
   return logs[agent.agentName];
 });
 
+export function buildAgentActivityLogs(input: {
+  brief: VentureBrief;
+  evidence: EvidenceItem[];
+  qualityIssues: QualityIssue[];
+  verdict: FinalVerdict;
+  redTeamObjections: string[];
+}): AgentActivityLog[] {
+  const sourceCount = input.evidence.filter((item) => item.kind === "source").length;
+  const assumptionCount = input.evidence.filter((item) => item.kind === "assumption").length;
+  const blockerCount = input.qualityIssues.filter((issue) => issue.severity === "fail").length;
+  const topAssumption = input.brief.assumptions[0] ?? "Critical assumption still needs validation.";
+  const topUnknown = input.brief.unknowns[0] ?? "Primary validation question is still unresolved.";
+  const topRedTeam = input.redTeamObjections[0] ?? "No specific red-team objection was recorded.";
+
+  const logs: Record<string, Omit<AgentActivityLog, "id" | "agentId" | "agentName" | "status">> = {
+    "Managing Partner": {
+      task: "Create the run plan, dispatch bounded agents, and hold final verdict authority.",
+      toolsUsed: ["Run planner", "Shared memory", "Conflict resolver"],
+      reasoningSummary: [
+        "Split the founder request into intake, framing, parallel specialist work, review, and finalization.",
+        "Kept the final verdict gated by evidence quality and reviewer objections."
+      ],
+      output: `Approved a ${input.verdict.decision} decision path with explicit unresolved risks.`,
+      handoffTo: "Intake and Clarification"
+    },
+    "Intake and Clarification": {
+      task: "Turn raw founder input into a structured venture brief.",
+      toolsUsed: ["Brief parser", "Clarification scanner", "Shared memory"],
+      reasoningSummary: [
+        `Captured the target customer as ${input.brief.targetCustomer}.`,
+        "Recorded missing or uncertain facts as assumptions instead of silently filling them in."
+      ],
+      output: `Created the brief for: ${input.brief.idea}`,
+      handoffTo: "Venture Framer"
+    },
+    "Venture Framer": {
+      task: "Frame hypotheses, unknowns, and specialist questions.",
+      toolsUsed: ["Hypothesis mapper", "Shared memory"],
+      reasoningSummary: [
+        `Top assumption: ${topAssumption}`,
+        `Top unknown: ${topUnknown}`
+      ],
+      output: "Produced a specialist question set for market, customer, product, business, and growth agents.",
+      handoffTo: "Specialist Agents"
+    },
+    "Market Evidence": {
+      task: "Separate source-backed market evidence from assumptions.",
+      toolsUsed: ["Web search", "Seeded evidence", "Source verifier"],
+      reasoningSummary: [
+        "Used seeded verified citations in demo mode and kept live web search as an optional server-side capability.",
+        `Classified ${sourceCount} source-backed claim(s) and ${assumptionCount} assumption(s).`
+      ],
+      output: "Updated the evidence ledger with source labels, assumption labels, and validation gaps.",
+      handoffTo: "Quality Control"
+    },
+    "Customer and ICP": {
+      task: "Define the first customer segment and discovery plan.",
+      toolsUsed: ["Customer research synthesis", "Interview planner", "Shared memory"],
+      reasoningSummary: [
+        "Narrowed the buyer segment to a founder with a near-term build decision.",
+        "Converted customer uncertainty into interview questions rather than proof claims."
+      ],
+      output: "Produced ICP, buying-trigger, objection, and interview-plan notes.",
+      handoffTo: "Product Strategy"
+    },
+    "Product Strategy": {
+      task: "Review MVP scope and implementation risks.",
+      toolsUsed: ["PRD reviewer", "Technical feasibility debugger"],
+      reasoningSummary: [
+        "Kept the first product surface focused on intake, sprint state, evidence, gates, verdict, and artifacts.",
+        "Flagged live search, exports, auth, and persistence as later infrastructure unless the local demo remains reliable."
+      ],
+      output: "Produced MVP scope, non-goals, acceptance criteria, and feasibility risks.",
+      handoffTo: "Quality Control"
+    },
+    "Business Modeler": {
+      task: "Analyze pricing, unit economics, and willingness-to-pay risk.",
+      toolsUsed: ["Unit economics worksheet", "Pricing sensitivity analysis"],
+      reasoningSummary: [
+        "Treated paid report and workspace pricing as hypotheses, not validated revenue.",
+        `Found ${blockerCount} blocking quality issue(s) that affect monetization confidence.`
+      ],
+      output: "Produced pricing assumptions, cost drivers, sensitivity risks, and a willingness-to-pay validation need.",
+      handoffTo: "Growth Strategist"
+    },
+    "Growth Strategist": {
+      task: "Create channels, first-user actions, and validation experiments.",
+      toolsUsed: ["Channel research", "Experiment planner", "Shared memory"],
+      reasoningSummary: [
+        "Matched channels to solo founder communities and near-term build decisions.",
+        "Mapped the riskiest assumptions to experiments that could change the verdict."
+      ],
+      output: "Produced first-user plan, messaging, experiments, and success metrics.",
+      handoffTo: "Red Team Critic"
+    },
+    "Red Team Critic": {
+      task: "Pressure-test the venture thesis and identify failure modes.",
+      toolsUsed: ["Contradiction scanner", "Disproof test planner", "Source verifier"],
+      reasoningSummary: [
+        topRedTeam,
+        "Checked whether the verdict would contradict evidence quality, pricing uncertainty, or substitute risk."
+      ],
+      output: "Produced red-team objections, failure modes, and disproof tests.",
+      handoffTo: "Quality Control"
+    },
+    "Quality Control": {
+      task: "Review outputs for unsupported claims, contradictions, formatting gaps, and usefulness.",
+      toolsUsed: ["Citation audit", "Artifact consistency checker", "Report reviewer"],
+      reasoningSummary: [
+        "Checked that assumptions stay labeled and URLs are not invented.",
+        "Returned revision pressure to monetization and competitor claims before finalization."
+      ],
+      output: "Produced reviewer findings and approval conditions for the final artifact packet.",
+      handoffTo: "Artifact Producer"
+    },
+    "Artifact Producer": {
+      task: "Assemble founder-ready artifacts from approved material only.",
+      toolsUsed: ["Document assembler", "Citation audit", "Report reviewer"],
+      reasoningSummary: [
+        "Used the approved verdict, evidence IDs, red-team objections, and quality gates as the source of truth.",
+        "Kept uncertainty visible instead of smoothing it out of the founder-facing documents."
+      ],
+      output: "Produced aligned founder memo, market brief, PRD, pitch outline, unit economics, GTM plan, and red-team memo.",
+      handoffTo: "Quality Control"
+    }
+  };
+
+  return AGENT_CONTRACTS.map((agent, index) => ({
+    id: `activity-${agent.id}`,
+    agentId: agent.id,
+    agentName: agent.agentName,
+    status: "complete",
+    ...logs[agent.agentName],
+    handoffTo: logs[agent.agentName].handoffTo ?? AGENT_CONTRACTS[index + 1]?.agentName
+  }));
+}
+
 export function buildAgentRunsFromContracts(summaries: Partial<Record<string, string>> = {}): AgentRun[] {
   return AGENT_CONTRACTS.map((agent) => ({
     id: agent.id,
@@ -252,7 +460,9 @@ export function buildAgentRunsFromContracts(summaries: Partial<Record<string, st
     role: agent.purpose,
     status: "complete",
     logs: [agentSprintLogLines[AGENT_CONTRACTS.indexOf(agent)]],
-    summary: summaries[agent.agentName] ?? defaultSummaryForAgent(agent.agentName)
+    activityLogs: [],
+    summary: summaries[agent.agentName] ?? defaultSummaryForAgent(agent.agentName),
+    toolUseSummary: agent.tools.map((item) => item.label)
   }));
 }
 
@@ -270,6 +480,7 @@ export function buildMultiAgentSystem(input: {
   const topAssumption = input.brief.assumptions[0] ?? "The founder has a business-critical assumption that still needs validation.";
   const topUnknown = input.brief.unknowns[0] ?? "The first validation question is still unresolved.";
   const topRedTeam = input.redTeamObjections[0] ?? "The red-team pass did not find a specific objection.";
+  const activityLogs = buildAgentActivityLogs(input);
 
   return {
     overview:
@@ -481,6 +692,7 @@ export function buildMultiAgentSystem(input: {
         status: "approved"
       }
     ],
+    activityLogs,
     communicationProtocol: [
       "Handoff From",
       "Handoff To",

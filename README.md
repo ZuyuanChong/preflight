@@ -57,7 +57,7 @@ The first autonomous build should produce these screens before any live API inte
 
 ## Multi-Agent System
 
-Preflight now models the venture sprint as an explicit multi-agent system instead of a loose role list. The app exposes agent ownership, workflow order, shared memory, handoffs, revision requests, and reviewer findings in the product UI.
+Preflight now models the venture sprint as an explicit multi-agent system instead of a loose role list. The app exposes agent ownership, role-specific tools, workflow order, shared memory, handoffs, revision requests, reviewer findings, and inspectable per-agent activity logs in the product UI.
 
 - **Managing Partner:** Orchestrator that assigns work, resolves conflicts, and approves the final verdict.
 - **Intake and Clarification:** Converts founder input into a usable venture brief and records safe assumptions.
@@ -70,6 +70,16 @@ Preflight now models the venture sprint as an explicit multi-agent system instea
 - **Red Team Critic:** Challenges assumptions, urgency, moat, willingness to pay, and evidence quality.
 - **Quality Control:** Reviews accuracy, completeness, consistency, unsupported claims, and artifact usefulness.
 - **Artifact Producer:** Finalization agent that formats only approved blueprint material into founder artifacts.
+
+Each agent is represented as an individual LLM profile with bounded capabilities. Examples:
+
+- Web-search capable agents: Market Evidence and Growth Strategist.
+- Document-review agents: Product Strategy, Quality Control, and Artifact Producer.
+- Data-analysis agent: Business Modeler.
+- Technical-debugging agent: Product Strategy.
+- Research-synthesis agents: Venture Framer, Customer and ICP, Growth Strategist, and Red Team Critic.
+
+The operating architecture panel includes an agent activity console. Each log shows the agent task, tools used, reasoning summary, output, and handoff target so the sprint feels modular and inspectable instead of one generic assistant response.
 
 ## Autonomous Codex Goal
 

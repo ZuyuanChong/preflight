@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { AgentType, PreflightRun } from "@/types/preflight";
+import type { AgentTool, AgentType, PreflightRun } from "@/types/preflight";
 
 const typeLabels: Record<AgentType, string> = {
   orchestrator: "Orchestrator",
@@ -7,6 +7,12 @@ const typeLabels: Record<AgentType, string> = {
   specialist: "Specialist",
   review: "Review",
   finalization: "Finalization"
+};
+
+const availabilityLabels: Record<AgentTool["availability"], string> = {
+  always: "always on",
+  demo_seeded: "demo seeded",
+  optional_live: "optional live"
 };
 
 interface MultiAgentSystemPanelProps {
@@ -18,7 +24,8 @@ interface MultiAgentSystemPanelProps {
 export function MultiAgentSystemPanel({ onOpenChange, open, run }: MultiAgentSystemPanelProps) {
   const system = run.multiAgentSystem;
   const revisionCount = system.handoffs.filter((handoff) => handoff.status === "revision_requested").length;
-  const sharedMemoryCount = system.memory.filter((item) => item.visibility === "shared").length;
+  const toolCount = new Set(system.agents.flatMap((agent) => agent.tools.map((toolItem) => toolItem.id))).size;
+  const logsByAgent = new Map(system.activityLogs.map((log) => [log.agentId, log]));
   const agentsByType = system.agents.reduce<Record<AgentType, typeof system.agents>>(
     (groups, agent) => {
       groups[agent.agentType].push(agent);
@@ -60,12 +67,12 @@ export function MultiAgentSystemPanel({ onOpenChange, open, run }: MultiAgentSys
             <strong>{system.agents.length}</strong>
           </div>
           <div>
-            <span>Handoffs</span>
-            <strong>{system.handoffs.length}</strong>
+            <span>Tool profiles</span>
+            <strong>{toolCount}</strong>
           </div>
           <div>
-            <span>Shared memory</span>
-            <strong>{sharedMemoryCount}</strong>
+            <span>Inspectable logs</span>
+            <strong>{system.activityLogs.length}</strong>
           </div>
           <div>
             <span>Revision loops</span>
@@ -82,7 +89,15 @@ export function MultiAgentSystemPanel({ onOpenChange, open, run }: MultiAgentSys
                   {agentsByType[type].map((agent) => (
                     <article key={agent.id}>
                       <strong>{agent.agentName}</strong>
+                      <em>{agent.llmProfile}</em>
                       <p>{agent.purpose}</p>
+                      <div className="capability-chip-list" aria-label={`${agent.agentName} capabilities`}>
+                        {agent.capabilities.slice(0, 3).map((capability) => (
+                          <span className="capability-chip" key={capability}>
+                            {capability}
+                          </span>
+                        ))}
+                      </div>
                       <small>Must not: {agent.mustNotDo[0]}</small>
                     </article>
                   ))}
@@ -106,6 +121,28 @@ export function MultiAgentSystemPanel({ onOpenChange, open, run }: MultiAgentSys
             </ol>
           </CollapsibleCard>
         </div>
+
+        <CollapsibleCard title="Specialized tool access" subtitle="Role-specific LLM capabilities" className="tool-access-card">
+          <div className="tool-matrix">
+            {system.agents.map((agent) => (
+              <article key={agent.id}>
+                <div>
+                  <span>{typeLabels[agent.agentType]}</span>
+                  <strong>{agent.agentName}</strong>
+                </div>
+                <p>{agent.llmProfile}</p>
+                <div className="tool-chip-list" aria-label={`${agent.agentName} tools`}>
+                  {agent.tools.map((toolItem) => (
+                    <span className={`tool-chip tool-${toolItem.category}`} key={toolItem.id}>
+                      {toolItem.label}
+                      <small>{availabilityLabels[toolItem.availability]}</small>
+                    </span>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </CollapsibleCard>
 
         <div className="architecture-grid lower-architecture-grid">
           <CollapsibleCard title="Handoff protocol" subtitle="Explicit transfer of work">
@@ -142,6 +179,61 @@ export function MultiAgentSystemPanel({ onOpenChange, open, run }: MultiAgentSys
             </div>
           </CollapsibleCard>
         </div>
+
+        <CollapsibleCard title="Agent activity logs" subtitle="Inspectable independent LLM work" className="activity-log-section">
+          <div className="agent-activity-list">
+            {system.agents.map((agent) => {
+              const activityLog = logsByAgent.get(agent.id);
+
+              return (
+                <details className="agent-activity-card" key={agent.id}>
+                  <summary>
+                    <span>
+                      <strong>{agent.agentName}</strong>
+                      <small>{agent.llmProfile}</small>
+                    </span>
+                    <em>{activityLog?.status ?? "queued"}</em>
+                  </summary>
+                  {activityLog ? (
+                    <div className="agent-activity-body">
+                      <div>
+                        <span>Task handled</span>
+                        <p>{activityLog.task}</p>
+                      </div>
+                      <div>
+                        <span>Tools used</span>
+                        <div className="tool-chip-list">
+                          {activityLog.toolsUsed.map((toolName) => (
+                            <span className="tool-chip" key={toolName}>
+                              {toolName}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <span>Reasoning summary</span>
+                        <ul>
+                          {activityLog.reasoningSummary.map((summary) => (
+                            <li key={summary}>{summary}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div>
+                        <span>Output</span>
+                        <p>{activityLog.output}</p>
+                      </div>
+                      {activityLog.handoffTo ? <small>Handoff to: {activityLog.handoffTo}</small> : null}
+                    </div>
+                  ) : (
+                    <div className="agent-activity-body">
+                      <p>No activity has been recorded for this agent yet.</p>
+                    </div>
+                  )}
+                </details>
+              );
+            })}
+          </div>
+        </CollapsibleCard>
 
         <CollapsibleCard title="Quality-control loop" subtitle="Approve or revise" className="review-loop-card">
           <div className="review-finding-grid">

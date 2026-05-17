@@ -9,6 +9,18 @@ export type WorkflowMode = "sequential" | "parallel";
 export type HandoffStatus = "queued" | "sent" | "accepted" | "revision_requested" | "blocked";
 export type MemoryVisibility = "shared" | "local";
 export type MemoryKind = "user_preference" | "assumption" | "decision" | "evidence_rule" | "local_note";
+export type AgentToolCategory =
+  | "orchestration"
+  | "web_search"
+  | "document_review"
+  | "data_analysis"
+  | "research_synthesis"
+  | "technical_debugging"
+  | "quality_review"
+  | "artifact_generation"
+  | "memory";
+export type AgentToolAvailability = "always" | "demo_seeded" | "optional_live";
+export type AgentActivityStatus = "queued" | "running" | "complete" | "blocked";
 
 export interface VentureBrief {
   idea: string;
@@ -30,14 +42,27 @@ export interface AgentRun {
   startedAt?: string;
   completedAt?: string;
   logs: string[];
+  activityLogs: AgentActivityLog[];
   summary: string;
+  toolUseSummary: string[];
+}
+
+export interface AgentTool {
+  id: string;
+  label: string;
+  category: AgentToolCategory;
+  purpose: string;
+  availability: AgentToolAvailability;
 }
 
 export interface AgentContract {
   id: string;
   agentName: string;
   agentType: AgentType;
+  llmProfile: string;
   purpose: string;
+  capabilities: string[];
+  tools: AgentTool[];
   coreResponsibilities: string[];
   inputs: string[];
   outputs: string[];
@@ -90,6 +115,18 @@ export interface ReviewFinding {
   status: "approved" | "revision_required" | "resolved";
 }
 
+export interface AgentActivityLog {
+  id: string;
+  agentId: string;
+  agentName: string;
+  status: AgentActivityStatus;
+  task: string;
+  toolsUsed: string[];
+  reasoningSummary: string[];
+  output: string;
+  handoffTo?: string;
+}
+
 export interface MultiAgentSystem {
   overview: string;
   operatingMode: "demo-deterministic" | "live-server" | "static-fallback";
@@ -98,6 +135,7 @@ export interface MultiAgentSystem {
   handoffs: AgentHandoff[];
   memory: MemoryItem[];
   reviewFindings: ReviewFinding[];
+  activityLogs: AgentActivityLog[];
   communicationProtocol: string[];
   finalOutputRules: string[];
 }

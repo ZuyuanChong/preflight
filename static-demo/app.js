@@ -43,24 +43,166 @@ const scorecardGroups = [
   ["Evidence quality", "Trust level and red-team pressure", ["Evidence quality", "Red-team severity"]]
 ];
 
-const agents = [
-  ["Managing Partner", "orchestrator", "Owns dispatch, conflict resolution, and the final verdict.", "Keep the demo focused on pre-build decision quality rather than broad startup advice."],
-  ["Intake and Clarification", "intake", "Converts founder input into a usable venture brief.", "The founder brief is complete enough to run without interrupting the demo."],
-  ["Venture Framer", "specialist", "Frames hypotheses, assumptions, unknowns, and specialist questions.", "The critical unknown is whether founders pay for confidence before they build."],
-  ["Market Evidence", "specialist", "Separates source-backed market claims from assumptions.", "Use sourced hackathon constraints and label competitor categories as assumptions until live search is added."],
-  ["Customer and ICP", "specialist", "Defines ICP, pains, workflows, objections, and interviews.", "The first ICP is a solo builder deciding whether to spend a weekend on an MVP."],
-  ["Product Strategy", "specialist", "Scopes MVP, user journey, features, and non-goals.", "Ship the product surface before optional live research or export infrastructure."],
-  ["Business Modeler", "specialist", "Models pricing, unit economics, cost drivers, and monetization risk.", "Pricing remains a hypothesis until founders prove they pay for pre-build confidence."],
-  ["Growth Strategist", "specialist", "Creates launch channels, validation experiments, and GTM plan.", "Start with indie hacker and hackathon communities where weekend MVP decisions are frequent."],
-  ["Red Team Critic", "review", "Attacks assumptions, moat, urgency, willingness to pay, and evidence quality.", "Preflight must own quality-gated decisions or substitutes can imitate the workflow."],
-  ["Quality Control", "review", "Checks accuracy, completeness, consistency, and unsupported claims.", "Unsupported pricing and competitor claims stay blocked from Proceed until evidence improves."],
-  ["Artifact Producer", "finalization", "Formats approved blueprint material into founder artifacts.", "Every artifact reinforces Pivot and does not contradict the risk profile."]
-].map(([name, type, role, summary], index) => ({
+const agentDefinitions = [
+  {
+    name: "Managing Partner",
+    type: "orchestrator",
+    role: "Owns dispatch, conflict resolution, and the final verdict.",
+    llmProfile: "Orchestration LLM for planning, dispatch, conflict resolution, and final decision control.",
+    capabilities: ["run orchestration", "conflict resolution", "decision synthesis"],
+    tools: ["Run planner", "Shared memory", "Conflict resolver"],
+    summary: "Keep the demo focused on pre-build decision quality rather than broad startup advice.",
+    activity: {
+      task: "Create the run plan, dispatch bounded agents, and hold final verdict authority.",
+      reasoning: ["Split the run into intake, framing, specialist work, review, and finalization.", "Kept the verdict gated by evidence quality."],
+      output: "Approved a Pivot decision path with explicit unresolved risks."
+    }
+  },
+  {
+    name: "Intake and Clarification",
+    type: "intake",
+    role: "Converts founder input into a usable venture brief.",
+    llmProfile: "Intake LLM for founder intent extraction and clarification checks.",
+    capabilities: ["brief parsing", "clarification detection", "preference capture"],
+    tools: ["Brief parser", "Clarification scanner", "Shared memory"],
+    summary: "The founder brief is complete enough to run without interrupting the demo.",
+    activity: {
+      task: "Turn raw founder input into a structured venture brief.",
+      reasoning: ["Captured idea, ICP, geography, and business model.", "Recorded uncertainty as assumptions instead of invented detail."],
+      output: "Created a founder brief for the venture sprint."
+    }
+  },
+  {
+    name: "Venture Framer",
+    type: "specialist",
+    role: "Frames hypotheses, assumptions, unknowns, and specialist questions.",
+    llmProfile: "Research-framing LLM for hypotheses, unknowns, and specialist task design.",
+    capabilities: ["hypothesis framing", "research synthesis", "assumption mapping"],
+    tools: ["Hypothesis mapper", "Shared memory"],
+    summary: "The critical unknown is whether founders pay for confidence before they build.",
+    activity: {
+      task: "Frame hypotheses, unknowns, and specialist questions.",
+      reasoning: ["Identified willingness to pay as the first critical assumption.", "Routed different questions to specialist agents."],
+      output: "Produced the specialist question set."
+    }
+  },
+  {
+    name: "Market Evidence",
+    type: "specialist",
+    role: "Separates source-backed market claims from assumptions.",
+    llmProfile: "Evidence LLM with web-search capability for market signals and source verification.",
+    capabilities: ["web search", "source verification", "market evidence review"],
+    tools: ["Web search", "Seeded evidence", "Source verifier"],
+    summary: "Use sourced hackathon constraints and label competitor categories as assumptions until live search is added.",
+    activity: {
+      task: "Separate source-backed market evidence from assumptions.",
+      reasoning: ["Used seeded verified citations in demo mode.", "Kept live web search as optional server-side capability."],
+      output: "Classified 2 sources and 2 assumptions in the evidence ledger."
+    }
+  },
+  {
+    name: "Customer and ICP",
+    type: "specialist",
+    role: "Defines ICP, pains, workflows, objections, and interviews.",
+    llmProfile: "Customer-research LLM for ICP definition, buyer workflow, and interviews.",
+    capabilities: ["customer research synthesis", "interview planning", "buyer workflow analysis"],
+    tools: ["Customer research synthesis", "Interview planner", "Shared memory"],
+    summary: "The first ICP is a solo builder deciding whether to spend a weekend on an MVP.",
+    activity: {
+      task: "Define the first customer segment and discovery plan.",
+      reasoning: ["Narrowed the user to founders with a near-term build decision.", "Converted uncertainty into interview questions."],
+      output: "Produced ICP, objections, and interview-plan notes."
+    }
+  },
+  {
+    name: "Product Strategy",
+    type: "specialist",
+    role: "Scopes MVP, user journey, features, and non-goals.",
+    llmProfile: "Product and technical-analysis LLM for MVP scope and feasibility debugging.",
+    capabilities: ["document review", "technical debugging", "MVP scoping"],
+    tools: ["PRD reviewer", "Technical feasibility debugger"],
+    summary: "Ship the product surface before optional live research or export infrastructure.",
+    activity: {
+      task: "Review MVP scope and implementation risks.",
+      reasoning: ["Kept the product focused on intake, sprint state, evidence, gates, verdict, and artifacts.", "Flagged live search and exports as later infrastructure."],
+      output: "Produced MVP scope, non-goals, and feasibility risks."
+    }
+  },
+  {
+    name: "Business Modeler",
+    type: "specialist",
+    role: "Models pricing, unit economics, cost drivers, and monetization risk.",
+    llmProfile: "Data-analysis LLM for pricing, unit economics, and sensitivity risk.",
+    capabilities: ["data analysis", "pricing sensitivity", "unit economics modeling"],
+    tools: ["Unit economics worksheet", "Pricing sensitivity analysis"],
+    summary: "Pricing remains a hypothesis until founders prove they pay for pre-build confidence.",
+    activity: {
+      task: "Analyze pricing, unit economics, and willingness-to-pay risk.",
+      reasoning: ["Treated paid reports as hypotheses.", "Flagged unsupported pricing as a blocker."],
+      output: "Produced pricing assumptions, cost drivers, and a willingness-to-pay validation need."
+    }
+  },
+  {
+    name: "Growth Strategist",
+    type: "specialist",
+    role: "Creates launch channels, validation experiments, and GTM plan.",
+    llmProfile: "Growth-research LLM with optional web search for channels and launch experiments.",
+    capabilities: ["web search", "research synthesis", "experiment planning"],
+    tools: ["Channel research", "Experiment planner", "Shared memory"],
+    summary: "Start with indie hacker and hackathon communities where weekend MVP decisions are frequent.",
+    activity: {
+      task: "Create channels, first-user actions, and validation experiments.",
+      reasoning: ["Matched channels to solo founder communities.", "Mapped risks to experiments that could change the verdict."],
+      output: "Produced first-user plan, messaging, experiments, and metrics."
+    }
+  },
+  {
+    name: "Red Team Critic",
+    type: "review",
+    role: "Attacks assumptions, moat, urgency, willingness to pay, and evidence quality.",
+    llmProfile: "Adversarial review LLM for contradictions, failure modes, and disproof tests.",
+    capabilities: ["contradiction analysis", "risk review", "disproof testing"],
+    tools: ["Contradiction scanner", "Disproof test planner", "Source verifier"],
+    summary: "Preflight must own quality-gated decisions or substitutes can imitate the workflow.",
+    activity: {
+      task: "Pressure-test the venture thesis and identify failure modes.",
+      reasoning: ["Checked whether the verdict contradicts evidence quality.", "Pressed on substitute risk and willingness to pay."],
+      output: "Produced red-team objections and disproof tests."
+    }
+  },
+  {
+    name: "Quality Control",
+    type: "review",
+    role: "Checks accuracy, completeness, consistency, and unsupported claims.",
+    llmProfile: "Quality-control LLM for document review, citation audit, and revision requests.",
+    capabilities: ["document review", "citation audit", "quality review"],
+    tools: ["Citation audit", "Artifact consistency checker", "Report reviewer"],
+    summary: "Unsupported pricing and competitor claims stay blocked from Proceed until evidence improves.",
+    activity: {
+      task: "Review outputs for unsupported claims, contradictions, and usefulness.",
+      reasoning: ["Checked assumptions remain labeled.", "Returned revision pressure to monetization and competitor claims."],
+      output: "Produced reviewer findings and approval conditions."
+    }
+  },
+  {
+    name: "Artifact Producer",
+    type: "finalization",
+    role: "Formats approved blueprint material into founder artifacts.",
+    llmProfile: "Finalization LLM for assembling approved claims into founder-ready documents.",
+    capabilities: ["artifact generation", "document review", "citation mapping"],
+    tools: ["Document assembler", "Citation audit", "Report reviewer"],
+    summary: "Every artifact reinforces Pivot and does not contradict the risk profile.",
+    activity: {
+      task: "Assemble founder-ready artifacts from approved material only.",
+      reasoning: ["Used the approved verdict and evidence IDs as source of truth.", "Kept uncertainty visible in the documents."],
+      output: "Produced aligned founder artifacts."
+    }
+  }
+];
+
+const agents = agentDefinitions.map((agent, index) => ({
   id: `agent-${index}`,
-  name,
-  type,
-  role,
-  summary,
+  ...agent,
   status: "queued",
   logs: []
 }));
@@ -541,13 +683,50 @@ function renderAgentContracts() {
           .map(
             (agent) => `<article>
               <strong>${agent.name}</strong>
+              <em>${agent.llmProfile}</em>
               <p>${agent.role}</p>
+              <div class="capability-chip-list">${agent.capabilities
+                .map((capability) => `<span class="capability-chip">${capability}</span>`)
+                .join("")}</div>
               <small>Must not overlap with another agent owner.</small>
             </article>`
           )
           .join("")}
       </div>`;
     })
+    .join("");
+}
+
+function renderAgentCapabilities() {
+  $("agentCapabilityMatrix").innerHTML = agents
+    .map(
+      (agent) => `<article>
+        <div><span>${agent.type}</span><strong>${agent.name}</strong></div>
+        <p>${agent.llmProfile}</p>
+        <div class="tool-chip-list">${agent.tools.map((toolName) => `<span class="tool-chip">${toolName}</span>`).join("")}</div>
+      </article>`
+    )
+    .join("");
+}
+
+function renderAgentActivityLogs() {
+  $("agentActivityLogs").innerHTML = agents
+    .map(
+      (agent) => `<details class="agent-activity-card">
+        <summary>
+          <span><strong>${agent.name}</strong><small>${agent.llmProfile}</small></span>
+          <em>${agent.status === "queued" ? "complete" : agent.status}</em>
+        </summary>
+        <div class="agent-activity-body">
+          <div><span>Task handled</span><p>${agent.activity.task}</p></div>
+          <div><span>Tools used</span><div class="tool-chip-list">${agent.tools
+            .map((toolName) => `<span class="tool-chip">${toolName}</span>`)
+            .join("")}</div></div>
+          <div><span>Reasoning summary</span><ul>${agent.activity.reasoning.map((item) => `<li>${item}</li>`).join("")}</ul></div>
+          <div><span>Output</span><p>${agent.activity.output}</p></div>
+        </div>
+      </details>`
+    )
     .join("");
 }
 
@@ -800,6 +979,8 @@ function renderAll() {
   renderActiveAgent();
   renderAgents();
   renderAgentContracts();
+  renderAgentCapabilities();
+  renderAgentActivityLogs();
   renderLogs();
   renderBlueprint();
   renderEvidence();
