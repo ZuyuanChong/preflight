@@ -6,30 +6,30 @@
 
 `src/app/api/runs/route.ts` still contained Git merge conflict markers around the OpenAI failure response. Next.js stopped compiling the route with `Merge conflict marker encountered`, which caused `POST /api/runs`, `/`, and `/sw.js` to return 500s during dev compilation.
 
-Root cause: a conflict between the current retryable error behavior and an older deterministic demo fallback behavior was left unresolved in the API route.
+Root cause: a conflict between the retryable error behavior and the deterministic demo fallback behavior was left unresolved in the API route.
 
 ### Fix
 
 - Removed the conflict block from `src/app/api/runs/route.ts`.
-- Kept the documented current behavior: live OpenAI failures return `mode: "error"` with `502` or `504`, while `Load completed demo` remains the explicit fallback path.
+- Kept the current branch behavior: live OpenAI failures return a retryable deterministic demo fallback run, with assumptions kept separate from sourced claims.
 
 ### Verification
 
 ```powershell
-rg -n '<<<<<<<|=======|>>>>>>>' .
+rg -n '<<<<<<<|=======|>>>>>>>' src static-demo tests package.json package-lock.json tsconfig.json next.config.mjs .env.example .gitignore README.md PLAN.md CODEX_HANDOVER.md AGENTS.md RALPH_LOOP_LAUNCH.md
 npm.cmd run typecheck
-Invoke-WebRequest -UseBasicParsing http://127.0.0.1:3000/
-Invoke-WebRequest -UseBasicParsing http://127.0.0.1:3000/api/runs
+npm.cmd run build
+npm.cmd run dev -- --hostname 127.0.0.1 --port 3000
 ```
 
 Results:
 
-- Conflict marker scan found no matches.
+- Source conflict marker scan found no matches.
 - `npm.cmd run typecheck` passed with exit code 0.
-- The already-running dev server returned `200 OK` for `/`.
-- `GET /api/runs` returned `200` with `{"ok":true,"mode":"live"}`.
+- `npm.cmd run build` passed with exit code 0 after stopping stale concurrent Next dev servers that were all writing `.next`.
+- Foreground `npm.cmd run dev -- --hostname 127.0.0.1 --port 3000` reached `Ready in 1374ms`; the verification command timed out because a dev server stays open by design.
 
-`npm.cmd run build` compiled the app source successfully, then failed during Next.js generated-manifest/type validation because multiple active Next/Node dev processes were writing `.next` at the same time. The source-level merge-marker failure is resolved; run a clean build after stopping the active dev servers if a production build artifact is needed.
+Note: five stale Preflight dev servers on ports `3000`, `3111`, `3120`, `3121`, and `3122` were stopped because they were serving `/api/runs` but returning `500` on `/` from corrupted concurrent `.next` state.
 
 ## 2026-05-17 Warmup Button Release Fix
 
