@@ -3,6 +3,7 @@ export type AgentStatus = "queued" | "running" | "blocked" | "complete" | "faile
 export type EvidenceKind = "source" | "assumption";
 export type QualitySeverity = "pass" | "warn" | "fail";
 export type RunStatus = "idle" | "running" | "complete" | "failed";
+export type ArtifactDepth = "executive" | "detailed";
 
 export interface VentureBrief {
   idea: string;

@@ -1,5 +1,36 @@
 # Implementation Log
 
+## 2026-05-17 API Route Merge Conflict Fix
+
+### Issue
+
+`src/app/api/runs/route.ts` still contained Git merge conflict markers around the OpenAI failure response. Next.js stopped compiling the route with `Merge conflict marker encountered`, which caused `POST /api/runs`, `/`, and `/sw.js` to return 500s during dev compilation.
+
+Root cause: a conflict between the current retryable error behavior and an older deterministic demo fallback behavior was left unresolved in the API route.
+
+### Fix
+
+- Removed the conflict block from `src/app/api/runs/route.ts`.
+- Kept the documented current behavior: live OpenAI failures return `mode: "error"` with `502` or `504`, while `Load completed demo` remains the explicit fallback path.
+
+### Verification
+
+```powershell
+rg -n '<<<<<<<|=======|>>>>>>>' .
+npm.cmd run typecheck
+Invoke-WebRequest -UseBasicParsing http://127.0.0.1:3000/
+Invoke-WebRequest -UseBasicParsing http://127.0.0.1:3000/api/runs
+```
+
+Results:
+
+- Conflict marker scan found no matches.
+- `npm.cmd run typecheck` passed with exit code 0.
+- The already-running dev server returned `200 OK` for `/`.
+- `GET /api/runs` returned `200` with `{"ok":true,"mode":"live"}`.
+
+`npm.cmd run build` compiled the app source successfully, then failed during Next.js generated-manifest/type validation because multiple active Next/Node dev processes were writing `.next` at the same time. The source-level merge-marker failure is resolved; run a clean build after stopping the active dev servers if a production build artifact is needed.
+
 ## 2026-05-17 Warmup Button Release Fix
 
 ### Issue
@@ -413,3 +444,33 @@ No commit or push was created. The latest useful state is present in the working
 ```text
 /goal Make Preflight submission-ready by verifying setup from a fresh terminal, documenting env vars and demo mode, adding a 3-minute demo script to README.md, and deploying only if Vercel authentication is already available. First read AGENTS.md and use Browser/Playwright/webapp-testing for verification. Do not break the local demo while attempting deployment. Commit and push the checkpoint to origin when verified.
 ```
+
+## Artifact Depth Merge Checkpoint - 2026-05-17
+
+Branch work:
+
+- Created and committed `codex/artifact-output-depth` from `main` in `.verification/worktrees/artifact-output-depth`.
+- Commit: `80a6495 feat: deepen founder artifact outputs`.
+- Merged the feature branch into `product-demo`.
+- Resolved conflicts in `src/app/api/runs/route.ts` and `static-demo/app.js`.
+
+What changed:
+
+- Added Executive Summary and Detailed Report output depth controls.
+- Rebuilt the artifact generator around founder-ready structured sections for the memo, market brief, PRD, deck outline, unit economics, GTM plan, and red-team memo.
+- Tightened live OpenAI instructions for concrete founder deliverables, evidence/assumption separation, and minimum structured detail.
+- Preserved deterministic fallback output when live generation fails.
+- Updated static fallback artifacts and depth controls.
+- Added `tests/artifact-depth.test.mjs` and `npm run test:artifacts`.
+
+Verification:
+
+- `npm.cmd run test:artifacts` passed: 2/2 tests.
+- `npm.cmd run build` passed after rerunning serially.
+- `npm.cmd run typecheck` passed after rerunning serially.
+- A parallel `typecheck`/`build` attempt failed because both touched `.next` at the same time; rerunning serially resolved it.
+
+Known notes:
+
+- Browser plugin was not available in this session.
+- Playwright CLI fallback required an `npx` package approval that was not granted, so verification focused on automated artifact contracts and Next.js build/typecheck.
