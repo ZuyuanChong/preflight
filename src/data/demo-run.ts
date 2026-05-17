@@ -1,6 +1,7 @@
 import { buildArtifacts } from "@/lib/artifacts";
+import { buildAgentRunsFromContracts, buildMultiAgentSystem } from "@/lib/multi-agent";
 import { demoQualityIssues } from "@/lib/quality";
-import type { AgentRun, EvidenceItem, FinalVerdict, PreflightRun, VentureBrief, VentureScorecard } from "@/types/preflight";
+import type { EvidenceItem, FinalVerdict, PreflightRun, VentureBrief, VentureScorecard } from "@/types/preflight";
 
 export const demoBrief: VentureBrief = {
   idea: "A web app where solo founders enter one sentence and an AI venture studio produces an evidence-backed company blueprint.",
@@ -39,80 +40,19 @@ export const demoVerdict: FinalVerdict = {
   ]
 };
 
-export const demoAgents: AgentRun[] = [
-  {
-    id: "agent-managing-partner",
-    agentName: "Managing Partner",
-    role: "Orchestrates, synthesizes, and decides the final verdict.",
-    status: "complete",
-    logs: ["Managing Partner synthesized a Pivot verdict."],
-    summary: "Keep the demo focused on pre-build decision quality rather than broad startup advice."
-  },
-  {
-    id: "agent-framer",
-    agentName: "Framer",
-    role: "Converts raw idea into structured venture brief and assumptions.",
-    status: "complete",
-    logs: ["Framer converted the raw idea into assumptions and unknowns."],
-    summary: "The critical unknown is whether founders pay for confidence before they build."
-  },
-  {
-    id: "agent-market",
-    agentName: "Market Scout",
-    role: "Finds market signals, competitors, substitutes, pricing, and demand evidence.",
-    status: "complete",
-    logs: ["Market Scout separated cited event constraints from unsourced market assumptions."],
-    summary: "Use sourced hackathon constraints and label competitor categories as assumptions until live search is added."
-  },
-  {
-    id: "agent-customer",
-    agentName: "Customer Analyst",
-    role: "Defines ICP, pains, workflows, objections, and interview questions.",
-    status: "complete",
-    logs: ["Customer Analyst narrowed ICP to solo technical founders."],
-    summary: "The first ICP is a solo builder deciding whether to spend a weekend on an MVP."
-  },
-  {
-    id: "agent-product",
-    agentName: "Product Architect",
-    role: "Scopes MVP, user journey, features, and non-goals.",
-    status: "complete",
-    logs: ["Product Architect scoped the MVP to intake, sprint, evidence, gates, and artifacts."],
-    summary: "Ship the product surface before optional live research or export infrastructure."
-  },
-  {
-    id: "agent-business",
-    agentName: "Business Modeler",
-    role: "Models pricing, unit economics, cost drivers, and monetization risk.",
-    status: "complete",
-    logs: ["Business Modeler flagged willingness-to-pay as the highest-risk assumption."],
-    summary: "Pricing remains a hypothesis until founders prove they pay for pre-build confidence."
-  },
-  {
-    id: "agent-growth",
-    agentName: "Growth Strategist",
-    role: "Creates launch channels, validation experiments, and GTM plan.",
-    status: "complete",
-    logs: ["Growth Strategist chose community-led founder workflows as the first channel."],
-    summary: "Start with indie hacker and hackathon communities where weekend MVP decisions are frequent."
-  },
-  {
-    id: "agent-red-team",
-    agentName: "Red Team Critic",
-    role: "Attacks assumptions, moat, urgency, willingness to pay, and evidence quality.",
-    status: "complete",
-    logs: ["Red Team challenged the generic AI advisor positioning."],
-    summary: "Preflight must own quality-gated decisions or substitutes can imitate the workflow."
-  },
-  {
-    id: "agent-artifact",
-    agentName: "Artifact Producer",
-    role: "Formats final outputs.",
-    status: "complete",
-    logs: ["Artifact Producer aligned all outputs to the same verdict."],
-    summary: "Every artifact reinforces Pivot and does not contradict the risk profile."
-  }
-];
+export const demoAgents = buildAgentRunsFromContracts({
+  "Managing Partner": "Keep the demo focused on pre-build decision quality rather than broad startup advice.",
+  "Intake and Clarification": "The founder brief is complete enough to run without interrupting the demo.",
+  "Venture Framer": "The critical unknown is whether founders pay for confidence before they build.",
+  "Market Evidence": "Use sourced hackathon constraints and label competitor categories as assumptions until live search is added.",
+  "Customer and ICP": "The first ICP is a solo builder deciding whether to spend a weekend on an MVP.",
+  "Product Strategy": "Ship the product surface before optional live research or export infrastructure.",
+  "Business Modeler": "Pricing remains a hypothesis until founders prove they pay for pre-build confidence.",
+  "Growth Strategist": "Start with indie hacker and hackathon communities where weekend MVP decisions are frequent.",
+  "Red Team Critic": "Preflight must own quality-gated decisions or substitutes can imitate the workflow.",
+  "Quality Control": "Unsupported pricing and competitor claims stay blocked from Proceed until evidence improves.",
+  "Artifact Producer": "Every artifact reinforces Pivot and does not contradict the risk profile."
+});
 
 export const demoEvidence: EvidenceItem[] = [
   {
@@ -124,7 +64,7 @@ export const demoEvidence: EvidenceItem[] = [
     summary: "The guide frames Impact around market value, product polish, and AI serving a human user.",
     confidence: "high",
     freshness: "2026-05-17",
-    agentName: "Market Scout"
+    agentName: "Market Evidence"
   },
   {
     id: "ev-codex-goals",
@@ -135,7 +75,7 @@ export const demoEvidence: EvidenceItem[] = [
     summary: "OpenAI describes Goals as scoped completion contracts that keep a thread working toward an auditable outcome.",
     confidence: "high",
     freshness: "2026-05-17",
-    agentName: "Framer"
+    agentName: "Venture Framer"
   },
   {
     id: "ev-assumption-founder-wtp",
@@ -151,7 +91,7 @@ export const demoEvidence: EvidenceItem[] = [
     claim: "General AI research tools, pitch helpers, and startup templates are substitute categories, not sourced direct competitors in demo mode.",
     summary: "Live evidence mode should replace this with real competitor URLs before submission claims are made.",
     confidence: "medium",
-    agentName: "Market Scout"
+    agentName: "Market Evidence"
   }
 ];
 
@@ -175,12 +115,22 @@ export const demoRedTeamObjections = [
   "A Pivot verdict must feel useful enough that the founder still wants the artifact package."
 ];
 
+export const demoMultiAgentSystem = buildMultiAgentSystem({
+  brief: demoBrief,
+  mode: "demo",
+  evidence: demoEvidence,
+  qualityIssues: demoQualityIssues,
+  verdict: demoVerdict,
+  redTeamObjections: demoRedTeamObjections
+});
+
 export const demoRun: PreflightRun = {
   id: "demo-preflight-001",
   mode: "demo",
   status: "complete",
   brief: demoBrief,
   agents: demoAgents,
+  multiAgentSystem: demoMultiAgentSystem,
   evidence: demoEvidence,
   qualityIssues: demoQualityIssues,
   scorecard: demoScorecard,

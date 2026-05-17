@@ -44,18 +44,21 @@ const scorecardGroups = [
 ];
 
 const agents = [
-  ["Managing Partner", "Orchestrates, synthesizes, and decides the final verdict.", "Keep the demo focused on pre-build decision quality rather than broad startup advice."],
-  ["Framer", "Converts raw idea into structured venture brief and assumptions.", "The critical unknown is whether founders pay for confidence before they build."],
-  ["Market Scout", "Finds market signals, competitors, substitutes, pricing, and demand evidence.", "Use sourced hackathon constraints and label competitor categories as assumptions until live search is added."],
-  ["Customer Analyst", "Defines ICP, pains, workflows, objections, and interview questions.", "The first ICP is a solo builder deciding whether to spend a weekend on an MVP."],
-  ["Product Architect", "Scopes MVP, user journey, features, and non-goals.", "Ship the product surface before optional live research or export infrastructure."],
-  ["Business Modeler", "Models pricing, unit economics, cost drivers, and monetization risk.", "Pricing remains a hypothesis until founders prove they pay for pre-build confidence."],
-  ["Growth Strategist", "Creates launch channels, validation experiments, and GTM plan.", "Start with indie hacker and hackathon communities where weekend MVP decisions are frequent."],
-  ["Red Team Critic", "Attacks assumptions, moat, urgency, willingness to pay, and evidence quality.", "Preflight must own quality-gated decisions or substitutes can imitate the workflow."],
-  ["Artifact Producer", "Formats final outputs.", "Every artifact reinforces Pivot and does not contradict the risk profile."]
-].map(([name, role, summary], index) => ({
+  ["Managing Partner", "orchestrator", "Owns dispatch, conflict resolution, and the final verdict.", "Keep the demo focused on pre-build decision quality rather than broad startup advice."],
+  ["Intake and Clarification", "intake", "Converts founder input into a usable venture brief.", "The founder brief is complete enough to run without interrupting the demo."],
+  ["Venture Framer", "specialist", "Frames hypotheses, assumptions, unknowns, and specialist questions.", "The critical unknown is whether founders pay for confidence before they build."],
+  ["Market Evidence", "specialist", "Separates source-backed market claims from assumptions.", "Use sourced hackathon constraints and label competitor categories as assumptions until live search is added."],
+  ["Customer and ICP", "specialist", "Defines ICP, pains, workflows, objections, and interviews.", "The first ICP is a solo builder deciding whether to spend a weekend on an MVP."],
+  ["Product Strategy", "specialist", "Scopes MVP, user journey, features, and non-goals.", "Ship the product surface before optional live research or export infrastructure."],
+  ["Business Modeler", "specialist", "Models pricing, unit economics, cost drivers, and monetization risk.", "Pricing remains a hypothesis until founders prove they pay for pre-build confidence."],
+  ["Growth Strategist", "specialist", "Creates launch channels, validation experiments, and GTM plan.", "Start with indie hacker and hackathon communities where weekend MVP decisions are frequent."],
+  ["Red Team Critic", "review", "Attacks assumptions, moat, urgency, willingness to pay, and evidence quality.", "Preflight must own quality-gated decisions or substitutes can imitate the workflow."],
+  ["Quality Control", "review", "Checks accuracy, completeness, consistency, and unsupported claims.", "Unsupported pricing and competitor claims stay blocked from Proceed until evidence improves."],
+  ["Artifact Producer", "finalization", "Formats approved blueprint material into founder artifacts.", "Every artifact reinforces Pivot and does not contradict the risk profile."]
+].map(([name, type, role, summary], index) => ({
   id: `agent-${index}`,
   name,
+  type,
   role,
   summary,
   status: "queued",
@@ -63,15 +66,17 @@ const agents = [
 }));
 
 const logs = [
-  "Managing Partner opened the sprint and set the decision bar.",
-  "Framer converted the raw idea into assumptions and unknowns.",
-  "Market Scout separated cited event constraints from unsourced market assumptions.",
-  "Customer Analyst narrowed ICP to solo technical founders.",
-  "Product Architect scoped the MVP to intake, sprint, evidence, gates, and artifacts.",
+  "Managing Partner opened the sprint, assigned agents, and set the decision bar.",
+  "Intake and Clarification converted founder input into a complete venture brief.",
+  "Venture Framer turned the brief into hypotheses, assumptions, and unknowns.",
+  "Market Evidence separated sourced claims from assumptions and evidence gaps.",
+  "Customer and ICP narrowed the buyer, workflow, and interview questions.",
+  "Product Strategy scoped the MVP, user journey, features, and non-goals.",
   "Business Modeler flagged willingness-to-pay as the highest-risk assumption.",
-  "Growth Strategist chose community-led founder workflows as the first channel.",
-  "Red Team challenged the generic AI advisor positioning.",
-  "Artifact Producer aligned all outputs to the same verdict."
+  "Growth Strategist mapped channels, validation experiments, and first-user actions.",
+  "Red Team Critic challenged positioning, urgency, moat, and evidence quality.",
+  "Quality Control requested fixes for unsupported pricing and unsourced competitor claims.",
+  "Artifact Producer aligned all founder artifacts to the approved verdict."
 ];
 
 const evidence = [
@@ -82,7 +87,7 @@ const evidence = [
     url: "https://ralphthon.team-attention.com/guide",
     summary: "The guide frames Impact around market value, product polish, and AI serving a human user.",
     confidence: "high",
-    agent: "Market Scout"
+    agent: "Market Evidence"
   },
   {
     kind: "source",
@@ -91,7 +96,7 @@ const evidence = [
     url: "https://developers.openai.com/cookbook/examples/codex/using_goals_in_codex",
     summary: "OpenAI describes Goals as scoped completion contracts that keep a thread working toward an auditable outcome.",
     confidence: "high",
-    agent: "Framer"
+    agent: "Venture Framer"
   },
   {
     kind: "assumption",
@@ -105,7 +110,7 @@ const evidence = [
     claim: "General AI research tools, pitch helpers, and startup templates are substitute categories, not sourced direct competitors in demo mode.",
     summary: "Live evidence mode should replace this with real competitor URLs before submission claims are made.",
     confidence: "medium",
-    agent: "Market Scout"
+    agent: "Market Evidence"
   }
 ];
 
@@ -517,6 +522,35 @@ function renderAgents() {
   $("progressBar").style.width = `${displayProgress}%`;
 }
 
+function renderAgentContracts() {
+  const labels = {
+    orchestrator: "Orchestrator",
+    intake: "Intake",
+    specialist: "Specialist",
+    review: "Review",
+    finalization: "Finalization"
+  };
+
+  $("agentContracts").innerHTML = Object.keys(labels)
+    .map((type) => {
+      const groupAgents = agents.filter((agent) => agent.type === type);
+
+      return `<div class="contract-group">
+        <span>${labels[type]}</span>
+        ${groupAgents
+          .map(
+            (agent) => `<article>
+              <strong>${agent.name}</strong>
+              <p>${agent.role}</p>
+              <small>Must not overlap with another agent owner.</small>
+            </article>`
+          )
+          .join("")}
+      </div>`;
+    })
+    .join("");
+}
+
 function renderLogs() {
   const rows = agents.flatMap((agent) => agent.logs.map((log) => `<li><span>${agent.name}</span>${log}</li>`));
   $("logList").innerHTML = rows.length
@@ -543,6 +577,55 @@ function renderStatus() {
   $("startButton").disabled = runStatus === "running" || runStatus === "starting" || !$("idea").value.trim();
   $("completeButton").disabled = runStatus === "running" || runStatus === "starting";
   $("resetButton").disabled = runStatus === "running" || runStatus === "starting";
+}
+
+function applyRailTone(statusId, tone) {
+  const status = $(statusId);
+  const card = status.closest(".journey-card");
+  if (card) {
+    card.className = `journey-card journey-card-${tone}`;
+  }
+}
+
+function renderHeaderRail() {
+  const labels = {
+    idle: "Idle",
+    starting: "Starting",
+    running: "Running",
+    complete: "Complete",
+    failed: "Needs attention"
+  };
+  const completed = agents.filter((agent) => agent.status === "complete").length;
+  const progress = Math.round((completed / agents.length) * 100);
+  const sources = evidence.filter((item) => item.kind === "source").length;
+  const assumptions = evidence.filter((item) => item.kind === "assumption").length;
+
+  $("headerStatus").textContent = labels[runStatus] || runStatus;
+  $("headerStatus").className = `status-pill status-${runStatus}`;
+  $("headerProgress").textContent = `${completed}/${agents.length} agents`;
+  $("headerEvidence").textContent = `${sources} sources`;
+
+  $("railIntakeStatus").textContent = $("idea").value.trim() ? "Ready" : "Needs idea";
+  applyRailTone("railIntakeStatus", $("idea").value.trim() ? "ready" : "attention");
+
+  $("railAgentsStatus").textContent = $("agents").open ? "Open" : "Review";
+  applyRailTone("railAgentsStatus", $("agents").open ? "active" : "ready");
+
+  $("railSprintCaption").textContent = `${completed}/${agents.length} agents complete`;
+  $("railSprintStatus").textContent =
+    runStatus === "running" || runStatus === "starting" ? `${progress}%` : labels[runStatus];
+  applyRailTone("railSprintStatus", runStatus === "running" || runStatus === "starting" ? "active" : "ready");
+
+  $("railEvidenceCaption").textContent = `${sources} sources / ${assumptions} assumptions`;
+  $("railEvidenceStatus").textContent = `${issues.length} gate issues`;
+  applyRailTone("railEvidenceStatus", issues.length > 0 ? "attention" : "ready");
+
+  $("railBlueprintCaption").textContent = runStatus === "complete" ? verdict.decision : "Verdict locked";
+  $("railBlueprintStatus").textContent = runStatus === "complete" ? "Unlocked" : "Locked";
+  applyRailTone("railBlueprintStatus", runStatus === "complete" ? "active" : "locked");
+
+  $("railArtifactsStatus").textContent = runStatus === "complete" ? "Ready" : "Preview";
+  applyRailTone("railArtifactsStatus", runStatus === "complete" ? "active" : "ready");
 }
 
 function renderBlueprint() {
@@ -713,8 +796,10 @@ function renderArtifacts() {
 function renderAll() {
   updateSummary();
   renderStatus();
+  renderHeaderRail();
   renderActiveAgent();
   renderAgents();
+  renderAgentContracts();
   renderLogs();
   renderBlueprint();
   renderEvidence();
@@ -778,10 +863,28 @@ function resetDemo() {
 $("startButton").addEventListener("click", startSprint);
 $("completeButton").addEventListener("click", completeRun);
 $("resetButton").addEventListener("click", resetDemo);
+document.querySelectorAll(".section-rail [data-target]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const targetId = button.getAttribute("data-target");
+    if (!targetId) return;
+
+    if (button.hasAttribute("data-open-agents")) {
+      $("agents").open = true;
+    }
+
+    window.history.replaceState(null, "", `#${targetId}`);
+    window.requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    renderHeaderRail();
+  });
+});
+$("agents").addEventListener("toggle", renderHeaderRail);
 ["idea", "customer", "geography", "businessModel"].forEach((id) => {
   $(id).addEventListener("input", () => {
     $("briefFraming").textContent = currentBrief().problem;
     renderStatus();
+    renderHeaderRail();
     updateSummary();
     renderRedTeam();
   });

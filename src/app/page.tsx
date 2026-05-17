@@ -5,6 +5,7 @@ import { ArtifactTabs } from "@/components/ArtifactTabs";
 import { BlueprintPanel } from "@/components/BlueprintPanel";
 import { EvidenceLedger } from "@/components/EvidenceLedger";
 import { IntakePanel } from "@/components/IntakePanel";
+import { MultiAgentSystemPanel } from "@/components/MultiAgentSystemPanel";
 import { QualityGatePanel } from "@/components/QualityGatePanel";
 import { RedTeamPanel } from "@/components/RedTeamPanel";
 import { SprintDashboard } from "@/components/SprintDashboard";
@@ -26,18 +27,12 @@ interface RunResponse {
   warning?: string;
 }
 
-const journeySteps = [
-  ["01", "Intake", "Founder brief"],
-  ["02", "Agent Sprint", "Specialist pass"],
-  ["03", "Quality Gates", "Trust checks"],
-  ["04", "Founder Blueprint", "Decision packet"]
-];
-
 export default function Home() {
   const [brief, setBrief] = useState<VentureBrief>(demoBrief);
   const [run, setRun] = useState<PreflightRun>(() => createIdleRun());
   const [step, setStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isArchitectureOpen, setArchitectureOpen] = useState(false);
   const [notice, setNotice] = useState<string | undefined>(
     "Start Preflight requests the server when clicked. Load completed demo remains the explicit fallback."
   );
@@ -56,6 +51,18 @@ export default function Home() {
   }, [run.status, step]);
 
   const isRunning = run.status === "running";
+  const completedAgents = useMemo(
+    () => run.agents.filter((agent) => agent.status === "complete").length,
+    [run.agents]
+  );
+  const sprintProgress = Math.round((completedAgents / run.agents.length) * 100);
+  const runStatusLabel = {
+    idle: "Idle",
+    starting: "Starting",
+    running: "Running",
+    complete: "Complete",
+    failed: "Needs attention"
+  }[run.status];
   const signalCounts = useMemo(
     () => ({
       sources: run.evidence.filter((item) => item.kind === "source").length,
@@ -65,6 +72,84 @@ export default function Home() {
     [run.evidence, run.qualityIssues]
   );
   const evidenceIds = useMemo(() => run.evidence.map((item) => item.id), [run.evidence]);
+  const sectionRailItems = useMemo(
+    () => [
+      {
+        number: "01",
+        targetId: "intake-heading",
+        title: "Intake",
+        caption: "Edit founder brief",
+        status: brief.idea.trim() ? "Ready" : "Needs idea",
+        tone: brief.idea.trim() ? "ready" : "attention"
+      },
+      {
+        number: "02",
+        targetId: "agents",
+        title: "Agents",
+        caption: `${run.multiAgentSystem.agents.length} role contracts`,
+        status: isArchitectureOpen ? "Open" : "Review",
+        tone: isArchitectureOpen ? "active" : "ready"
+      },
+      {
+        number: "03",
+        targetId: "sprint-heading",
+        title: "Sprint",
+        caption: `${completedAgents}/${run.agents.length} agents complete`,
+        status: run.status === "running" || run.status === "starting" ? `${sprintProgress}%` : runStatusLabel,
+        tone: run.status === "running" || run.status === "starting" ? "active" : "ready"
+      },
+      {
+        number: "04",
+        targetId: "evidence-heading",
+        title: "Evidence",
+        caption: `${signalCounts.sources} sources / ${signalCounts.assumptions} assumptions`,
+        status: `${signalCounts.gateIssues} gate issues`,
+        tone: signalCounts.gateIssues > 0 ? "attention" : "ready"
+      },
+      {
+        number: "05",
+        targetId: "blueprint-heading",
+        title: "Blueprint",
+        caption: run.status === "complete" ? run.finalVerdict.decision : "Verdict locked",
+        status: run.status === "complete" ? "Unlocked" : "Locked",
+        tone: run.status === "complete" ? "active" : "locked"
+      },
+      {
+        number: "06",
+        targetId: "artifacts-heading",
+        title: "Artifacts",
+        caption: `${run.artifacts.length} founder outputs`,
+        status: run.status === "complete" ? "Ready" : "Preview",
+        tone: run.status === "complete" ? "active" : "ready"
+      }
+    ],
+    [
+      brief.idea,
+      completedAgents,
+      isArchitectureOpen,
+      run.agents.length,
+      run.artifacts.length,
+      run.finalVerdict.decision,
+      run.multiAgentSystem.agents.length,
+      run.status,
+      runStatusLabel,
+      signalCounts.assumptions,
+      signalCounts.gateIssues,
+      signalCounts.sources,
+      sprintProgress
+    ]
+  );
+
+  function handleSectionRailClick(targetId: string) {
+    if (targetId === "agents") {
+      setArchitectureOpen(true);
+    }
+
+    window.history.replaceState(null, "", `#${targetId}`);
+    window.requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 
   async function startSprint() {
     const startupStartedAt = performance.now();
@@ -150,27 +235,34 @@ export default function Home() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <div>
+        <div className="brand-lockup">
           <strong>Preflight</strong>
           <span>AI Venture Preflight</span>
         </div>
-        <nav aria-label="Demo sections">
-          <a href="#sprint-heading">Sprint</a>
-          <a href="#blueprint-heading">Blueprint</a>
-          <a href="#evidence-heading">Evidence</a>
-          <a href="#artifacts-heading">Artifacts</a>
-        </nav>
+        <div className="topbar-status" aria-label="Run status summary">
+          <span className={`status-pill status-${run.status}`}>{runStatusLabel}</span>
+          <span>{completedAgents}/{run.agents.length} agents</span>
+          <span>{signalCounts.sources} sources</span>
+        </div>
       </header>
 
-      <section className="journey-strip" aria-label="Preflight journey">
-        {journeySteps.map(([number, title, caption]) => (
-          <article key={title}>
-            <span>{number}</span>
-            <strong>{title}</strong>
-            <small>{caption}</small>
-          </article>
+      <nav className="journey-strip section-rail" aria-label="Preflight workspace shortcuts">
+        {sectionRailItems.map((item) => (
+          <button
+            aria-label={`Go to ${item.title}: ${item.caption}`}
+            className={`journey-card journey-card-${item.tone}`}
+            data-target={item.targetId}
+            key={item.title}
+            onClick={() => handleSectionRailClick(item.targetId)}
+            type="button"
+          >
+            <span>{item.number}</span>
+            <strong>{item.title}</strong>
+            <small>{item.caption}</small>
+            <em>{item.status}</em>
+          </button>
         ))}
-      </section>
+      </nav>
 
       <section className="workspace-grid" aria-label="Preflight workspace">
         <IntakePanel
@@ -195,8 +287,8 @@ export default function Home() {
           </div>
           <p>
             Run the idea through a live venture studio sprint, then inspect the verdict, evidence, trust checks, and
-            founder packet from one aligned blueprint. Server-side OpenAI generates the readout when available; demo
-            fallback remains explicit.
+            founder packet from one aligned blueprint. The operating layer now exposes agent ownership, handoffs,
+            shared memory, and reviewer feedback loops.
           </p>
           <div className="metric-grid">
             <div>
@@ -224,6 +316,8 @@ export default function Home() {
           </div>
         </section>
       </section>
+
+      <MultiAgentSystemPanel run={run} open={isArchitectureOpen} onOpenChange={setArchitectureOpen} />
 
       <section className="content-grid">
         <SprintDashboard run={run} />

@@ -7,6 +7,7 @@
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "test:artifacts": "node --test tests/artifact-depth.test.mjs",
+    "test:multi-agent": "node --test tests/multi-agent-contract.test.mjs",
     "test:scorecard": "node --test tests/scorecard-scale.test.mjs",
     "start": "next start"
   },

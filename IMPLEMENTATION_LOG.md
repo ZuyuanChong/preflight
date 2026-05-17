@@ -1,5 +1,109 @@
 # Implementation Log
 
+## 2026-05-17 Multi-Agent System Restructure
+
+### Skills And Tools Used
+
+- `superpowers:executing-plans` for inline execution against the existing Preflight plan.
+- `build-web-apps:frontend-app-builder` for the product UI restructure inside the existing console design system.
+- `browser:browser` for local rendered verification through the Codex in-app Browser runtime.
+- `superpowers:verification-before-completion` before claiming the implementation state.
+
+### What Changed
+
+- Added first-class multi-agent contracts in `src/types/preflight.ts`.
+- Added `src/lib/multi-agent.ts` with:
+  - Orchestrator, Intake, Specialist, Review, and Finalization agent definitions.
+  - Agent-by-agent responsibilities, inputs, outputs, tools/data sources, must-not-do boundaries, handoff conditions, and success criteria.
+  - Workflow map with sequential and parallel phases.
+  - Explicit handoff records, shared memory rules, reviewer findings, communication protocol, and final output rules.
+- Expanded the Preflight run model so every run now carries `multiAgentSystem`.
+- Restructured demo agents from 9 loose roles to 11 bounded agents:
+  - Managing Partner
+  - Intake and Clarification
+  - Venture Framer
+  - Market Evidence
+  - Customer and ICP
+  - Product Strategy
+  - Business Modeler
+  - Growth Strategist
+  - Red Team Critic
+  - Quality Control
+  - Artifact Producer
+- Updated live OpenAI generation instructions so dynamic runs use the same multi-agent boundaries and exact agent names.
+- Added `MultiAgentSystemPanel` to expose agent ownership, workflow order, handoffs, shared memory, and the QC feedback loop in the product UI.
+- Updated the static fallback with the same 11-agent structure and a visible multi-agent architecture panel.
+- Updated README agent documentation.
+- Added `tests/multi-agent-contract.test.mjs` and `npm run test:multi-agent`.
+
+### Verification
+
+Commands run:
+
+```powershell
+npm.cmd run typecheck
+npm.cmd run test:multi-agent
+node --check static-demo\app.js
+npm.cmd run test:artifacts
+npm.cmd run test:scorecard
+npm.cmd run build
+```
+
+Results:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run test:multi-agent` passed: 2/2 tests.
+- `node --check static-demo\app.js` passed.
+- `npm.cmd run test:artifacts` passed: 2/2 tests.
+- `npm.cmd run test:scorecard` passed: 3/3 tests.
+- `npm.cmd run build` passed. Next.js emitted nonfatal Webpack cache snapshot warnings after successful route generation.
+
+Rendered Browser verification:
+
+- Started a demo-only dev server at `http://127.0.0.1:3132`.
+- Desktop 1280px:
+  - Intake appeared first.
+  - Multi-agent architecture panel was present.
+  - Metrics showed 11 agents, 5 handoffs, 4 shared memory items, and 1 revision loop.
+  - Completed demo loaded to Pivot verdict.
+  - Agent studio rendered 11 agents.
+  - Workflow map rendered 5 steps.
+  - Handoff panel rendered 5 handoffs.
+  - Reviewer loop rendered 4 findings.
+  - Evidence ledger rendered 4 rows.
+  - All seven artifact tabs were present.
+  - GTM Plan tab opened successfully.
+  - No browser console errors or warnings were reported.
+- Mobile 390x844:
+  - Intake and primary controls were visible.
+  - Multi-agent panel was present.
+  - Completed demo loaded to Pivot verdict.
+  - Agent rows, workflow steps, and reviewer findings rendered.
+  - `scrollWidth` was 375 while `innerWidth` was 390, so no horizontal overflow was detected.
+
+### Known Notes
+
+- Creating a scoped branch failed because `.git` refs are not writable in this checkout:
+
+```text
+fatal: cannot lock ref 'refs/heads/codex/multi-agent-preflight': Unable to create 'C:/Users/zuyua/OneDrive/Desktop/digital-app/preflight/.git/refs/heads/codex/multi-agent-preflight.lock': Permission denied
+```
+
+- Git checkpoint staging was attempted after verification:
+
+```powershell
+git -c safe.directory=C:/Users/zuyua/OneDrive/Desktop/digital-app/preflight add README.md package.json IMPLEMENTATION_LOG.md src/app/globals.css src/app/page.tsx src/components/MultiAgentSystemPanel.tsx src/data/demo-run.ts src/lib/multi-agent.ts src/lib/openai-preflight.ts src/lib/sprint.ts src/types/preflight.ts static-demo/app.js static-demo/index.html static-demo/styles.css tests/multi-agent-contract.test.mjs tests/scorecard-scale.test.mjs
+```
+
+Result:
+
+```text
+fatal: Unable to create 'C:/Users/zuyua/OneDrive/Desktop/digital-app/preflight/.git/index.lock': Permission denied
+```
+
+- No commit or push was created. The verified changes are present in the working tree.
+- Work continued in place because the user explicitly requested implementation and previous log entries already show `.git` write permission blockers in this repo.
+
 ## 2026-05-17 Agent Startup UX Feedback
 
 ### Skills And Tools Used
@@ -628,3 +732,77 @@ fatal: Unable to create 'C:/Users/zuyua/OneDrive/Desktop/digital-app/preflight/.
 ```
 
 - No commit or push was created. The latest useful state is present in the working tree on `main`.
+
+## Collapsible Multi-Agent Architecture - 2026-05-18
+
+What changed:
+
+- Converted the `Multi-agent system: Operating architecture` section into a native collapsible `details`/`summary` component in the Next.js app.
+- Added nested collapsible architecture cards for agent ownership, workflow map, handoff protocol, shared context, and the quality-control loop.
+- Kept Agent ownership open by default after the parent panel opens, while the secondary architecture sections stay collapsed until selected.
+- Mirrored the same collapsible behavior in the static fallback.
+
+Verification:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run test:multi-agent` passed: 2/2 tests.
+- `node --check static-demo\app.js` passed.
+- `npm.cmd run build` passed. Build emitted nonfatal Webpack cache snapshot warnings after route generation.
+- Local dev server ran at `http://127.0.0.1:3135`.
+- Browser verification:
+  - Page title was `Preflight`.
+  - The operating architecture panel loaded collapsed by default.
+  - Clicking the panel chevron opened the architecture content.
+  - Nested card defaults were correct: Agent ownership open, Workflow map, Handoff protocol, Shared context, and Quality-control loop closed.
+  - Clicking Workflow map opened that nested card.
+  - Browser console returned no warning or error logs.
+  - Narrow viewport check reported `clientWidth` 505 and `scrollWidth` 505, with no horizontal overflow.
+
+Known notes:
+
+- The in-app browser did not expose a viewport resize capability in this session, so responsive browser verification used the available narrow viewport.
+- The Next.js build warnings were cache snapshot warnings only; the production build completed successfully.
+
+GitHub checkpoint:
+
+- Staging first failed under the default sandbox with:
+
+```text
+fatal: Unable to create 'C:/Users/zuyua/OneDrive/Desktop/digital-app/preflight/.git/index.lock': Permission denied
+```
+
+- After escalation approval, staging succeeded for:
+  - `src/components/MultiAgentSystemPanel.tsx`
+  - `src/app/globals.css`
+  - `static-demo/index.html`
+  - `static-demo/styles.css`
+
+## Header Rail Enhancement - 2026-05-18
+
+What changed:
+
+- Replaced the duplicate top navigation plus static five-card journey strip with a compact operational header:
+  - Brand and live run telemetry in the top bar.
+  - A six-item workspace rail for Intake, Agents, Sprint, Evidence, Blueprint, and Artifacts.
+- Converted the rail items into functional buttons instead of passive cards.
+- Added explicit section targeting so rail clicks update the URL hash and scroll to the matching workspace section.
+- Made the Agents rail item open the collapsible multi-agent architecture panel before scrolling to it.
+- Mirrored the header rail behavior in the static fallback.
+
+Verification:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run test:multi-agent` passed: 2/2 tests.
+- `node --check static-demo\app.js` passed.
+- `npm.cmd run build` passed. Build emitted nonfatal Webpack cache snapshot warnings after route generation.
+- Local dev server ran at `http://127.0.0.1:3136`.
+- Browser verification:
+  - Page title was `Preflight`.
+  - Header rail rendered as six real `button` controls.
+  - Narrow viewport reported `clientWidth` 505 and `scrollWidth` 505, so no horizontal overflow.
+  - Clicking the Agents rail item opened the architecture panel, updated the URL hash to `#agents`, and scrolled the panel to the top of the viewport.
+
+Known notes:
+
+- In-app browser screenshot capture timed out during this session, so verification used DOM state, URL hash, scroll position, and browser interaction evidence.
+- Dev server Fast Refresh performed one full reload during editing after a hot-update 404; the page reloaded successfully.

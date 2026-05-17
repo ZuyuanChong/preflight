@@ -55,17 +55,21 @@ The first autonomous build should produce these screens before any live API inte
 - **Red Team:** Specific objections that make the output more trustworthy.
 - **Artifacts:** Founder memo, market brief, PRD, pitch deck outline, unit economics, GTM plan, and red-team memo.
 
-## Agent Roles
+## Multi-Agent System
 
-- **Managing Partner:** Orchestrates, synthesizes, and decides the final verdict.
-- **Framer:** Converts raw idea into structured venture brief and assumptions.
-- **Market Scout:** Finds market signals, competitors, substitutes, pricing, and demand evidence.
-- **Customer Analyst:** Defines ICP, pains, workflows, objections, and interview questions.
-- **Product Architect:** Scopes MVP, user journey, features, and non-goals.
-- **Business Modeler:** Models pricing, unit economics, cost drivers, and monetization risk.
-- **Growth Strategist:** Creates launch channels, validation experiments, and GTM plan.
-- **Red Team Critic:** Attacks assumptions, moat, urgency, willingness to pay, and evidence quality.
-- **Artifact Producer:** Formats final outputs.
+Preflight now models the venture sprint as an explicit multi-agent system instead of a loose role list. The app exposes agent ownership, workflow order, shared memory, handoffs, revision requests, and reviewer findings in the product UI.
+
+- **Managing Partner:** Orchestrator that assigns work, resolves conflicts, and approves the final verdict.
+- **Intake and Clarification:** Converts founder input into a usable venture brief and records safe assumptions.
+- **Venture Framer:** Turns the brief into hypotheses, assumptions, unknowns, and specialist questions.
+- **Market Evidence:** Separates sourced claims from assumptions, competitor gaps, and evidence risks.
+- **Customer and ICP:** Defines the first buyer segment, pain, workflow, objections, and interviews.
+- **Product Strategy:** Scopes MVP, user journey, features, non-goals, and feasibility risks.
+- **Business Modeler:** Models pricing, unit economics assumptions, cost drivers, and monetization risk.
+- **Growth Strategist:** Creates launch channels, validation experiments, and first-user plan.
+- **Red Team Critic:** Challenges assumptions, urgency, moat, willingness to pay, and evidence quality.
+- **Quality Control:** Reviews accuracy, completeness, consistency, unsupported claims, and artifact usefulness.
+- **Artifact Producer:** Finalization agent that formats only approved blueprint material into founder artifacts.
 
 ## Autonomous Codex Goal
 

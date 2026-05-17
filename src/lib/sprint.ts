@@ -1,18 +1,9 @@
 import type { AgentRun, PreflightRun, VentureBrief } from "@/types/preflight";
 import { demoRun } from "@/data/demo-run";
 import { buildArtifacts } from "@/lib/artifacts";
+import { agentSprintLogLines, buildMultiAgentSystem } from "@/lib/multi-agent";
 
-export const sprintLogLines = [
-  "Managing Partner opened the sprint and set the decision bar.",
-  "Framer converted the raw idea into assumptions and unknowns.",
-  "Market Scout separated cited event constraints from unsourced market assumptions.",
-  "Customer Analyst narrowed ICP to solo technical founders.",
-  "Product Architect scoped the MVP to intake, sprint, evidence, gates, and artifacts.",
-  "Business Modeler flagged willingness-to-pay as the highest-risk assumption.",
-  "Growth Strategist chose community-led founder workflows as the first channel.",
-  "Red Team challenged the generic AI advisor positioning.",
-  "Artifact Producer aligned all outputs to the same verdict."
-];
+export const sprintLogLines = agentSprintLogLines;
 
 export function createIdleRun(): PreflightRun {
   return {
@@ -33,7 +24,15 @@ export function createRunFromBrief(brief: VentureBrief): PreflightRun {
     ...createIdleRun(),
     id: `demo-${Date.now()}`,
     brief,
-    artifacts: buildArtifacts(brief, demoRun.finalVerdict)
+    artifacts: buildArtifacts(brief, demoRun.finalVerdict),
+    multiAgentSystem: buildMultiAgentSystem({
+      brief,
+      mode: "demo",
+      evidence: demoRun.evidence,
+      qualityIssues: demoRun.qualityIssues,
+      verdict: demoRun.finalVerdict,
+      redTeamObjections: demoRun.redTeamObjections
+    })
   };
 }
 

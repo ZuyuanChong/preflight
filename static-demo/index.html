@@ -9,24 +9,37 @@
   <body>
     <main class="app-shell">
       <header class="topbar">
-        <div>
+        <div class="brand-lockup">
           <strong>Preflight</strong>
           <span>AI Venture Preflight</span>
         </div>
-        <nav aria-label="Demo sections">
-          <a href="#sprint">Sprint</a>
-          <a href="#blueprint">Blueprint</a>
-          <a href="#evidence">Evidence</a>
-          <a href="#artifacts">Artifacts</a>
-        </nav>
+        <div class="topbar-status" aria-label="Run status summary">
+          <span class="status-pill status-idle" id="headerStatus">Idle</span>
+          <span id="headerProgress">0/11 agents</span>
+          <span id="headerEvidence">2 sources</span>
+        </div>
       </header>
 
-      <section class="journey-strip" aria-label="Preflight journey">
-        <article><span>01</span><strong>Intake</strong><small>Founder brief</small></article>
-        <article><span>02</span><strong>Agent Sprint</strong><small>Specialist pass</small></article>
-        <article><span>03</span><strong>Quality Gates</strong><small>Trust checks</small></article>
-        <article><span>04</span><strong>Founder Blueprint</strong><small>Decision packet</small></article>
-      </section>
+      <nav class="journey-strip section-rail" aria-label="Preflight workspace shortcuts">
+        <button class="journey-card journey-card-ready" type="button" data-target="intake-title">
+          <span>01</span><strong>Intake</strong><small>Edit founder brief</small><em id="railIntakeStatus">Ready</em>
+        </button>
+        <button class="journey-card journey-card-ready" type="button" data-target="agents" data-open-agents>
+          <span>02</span><strong>Agents</strong><small>11 role contracts</small><em id="railAgentsStatus">Review</em>
+        </button>
+        <button class="journey-card journey-card-ready" type="button" data-target="sprint">
+          <span>03</span><strong>Sprint</strong><small id="railSprintCaption">0/11 agents complete</small><em id="railSprintStatus">Idle</em>
+        </button>
+        <button class="journey-card journey-card-attention" type="button" data-target="evidence">
+          <span>04</span><strong>Evidence</strong><small id="railEvidenceCaption">2 sources / 2 assumptions</small><em id="railEvidenceStatus">7 gate issues</em>
+        </button>
+        <button class="journey-card journey-card-locked" type="button" data-target="blueprint">
+          <span>05</span><strong>Blueprint</strong><small id="railBlueprintCaption">Verdict locked</small><em id="railBlueprintStatus">Locked</em>
+        </button>
+        <button class="journey-card journey-card-ready" type="button" data-target="artifacts">
+          <span>06</span><strong>Artifacts</strong><small>7 founder outputs</small><em id="railArtifactsStatus">Preview</em>
+        </button>
+      </nav>
 
       <section class="workspace-grid">
         <section class="panel intake-panel" aria-labelledby="intake-title">
@@ -79,7 +92,8 @@
           </div>
           <p>
             Run the idea through a venture studio sprint, then inspect the verdict, evidence, trust checks, and founder
-            packet from one aligned blueprint.
+            packet from one aligned blueprint. The operating layer exposes agent ownership, handoffs, shared memory, and
+            reviewer feedback loops.
           </p>
           <div class="metric-grid">
             <div><span>Verdict</span><strong id="metricVerdict">Locked</strong></div>
@@ -96,6 +110,71 @@
         </section>
       </section>
 
+      <details class="panel multi-agent-panel collapsible-panel" id="agents" aria-labelledby="agents-title">
+        <summary class="collapsible-summary">
+          <div>
+            <p class="section-label">Multi-agent system</p>
+            <h2 id="agents-title">Operating architecture</h2>
+            <p>
+              Preflight runs as a lean multi-agent decision system: intake creates the brief, specialists answer bounded
+              questions, reviewers pressure-test the work, and finalization packages only approved claims.
+            </p>
+          </div>
+          <span class="summary-actions">
+            <span class="preview-chip">demo deterministic</span>
+            <span class="collapse-indicator" aria-hidden="true"></span>
+          </span>
+        </summary>
+        <div class="collapsible-body">
+          <div class="metric-grid multi-agent-metrics">
+            <div><span>Agents</span><strong>11</strong></div>
+            <div><span>Handoffs</span><strong>5</strong></div>
+            <div><span>Shared memory</span><strong>4</strong></div>
+            <div><span>Revision loops</span><strong>1</strong></div>
+          </div>
+          <div class="architecture-grid">
+            <details class="architecture-card collapsible-card" open>
+              <summary class="architecture-heading collapsible-card-summary">
+                <span><h3>Agent ownership</h3><small>No overlapping owners</small></span>
+                <span class="collapse-indicator" aria-hidden="true"></span>
+              </summary>
+              <div class="collapsible-card-body">
+                <div class="agent-contract-groups" id="agentContracts"></div>
+              </div>
+            </details>
+            <details class="architecture-card collapsible-card">
+              <summary class="architecture-heading collapsible-card-summary">
+                <span><h3>Workflow map</h3><small>Sequential and parallel passes</small></span>
+                <span class="collapse-indicator" aria-hidden="true"></span>
+              </summary>
+              <div class="collapsible-card-body">
+                <ol class="workflow-list">
+                  <li><div><span>sequential</span><strong>Interpret request and create brief</strong></div><p>Structured venture brief plus recorded assumptions.</p><small>Managing Partner -> Intake and Clarification</small></li>
+                  <li><div><span>sequential</span><strong>Frame hypotheses and unknowns</strong></div><p>Assumption register, unknowns, and specialist question set.</p><small>Venture Framer</small></li>
+                  <li><div><span>parallel</span><strong>Run specialist analysis</strong></div><p>Evidence ledger, ICP, MVP scope, pricing hypothesis, and validation plan.</p><small>Market Evidence -> Customer and ICP -> Product Strategy -> Business Modeler -> Growth Strategist</small></li>
+                  <li><div><span>sequential</span><strong>Pressure-test and review</strong></div><p>Red-team critique, revision requests, and quality gate status.</p><small>Red Team Critic -> Quality Control</small></li>
+                  <li><div><span>sequential</span><strong>Synthesize verdict and artifacts</strong></div><p>Founder-ready blueprint and artifact packet.</p><small>Managing Partner -> Artifact Producer -> Quality Control</small></li>
+                </ol>
+              </div>
+            </details>
+          </div>
+          <details class="architecture-card collapsible-card review-loop-card">
+            <summary class="architecture-heading collapsible-card-summary">
+              <span><h3>Quality-control loop</h3><small>Approve or revise</small></span>
+              <span class="collapse-indicator" aria-hidden="true"></span>
+            </summary>
+            <div class="collapsible-card-body">
+              <div class="review-finding-grid">
+                <article class="review-finding severity-pass"><span>resolved</span><strong>Evidence separation</strong><p>Sources and assumptions stay separate in the ledger.</p><small>Do not promote assumptions without live evidence.</small></article>
+                <article class="review-finding severity-fail"><span>revision required</span><strong>Willingness to pay</strong><p>Pricing remains a business-critical assumption.</p><small>Keep Pivot until buyer behavior proves payment intent.</small></article>
+                <article class="review-finding severity-warn"><span>resolved</span><strong>Red-team pressure</strong><p>Generic AI tools can imitate weak versions of the workflow.</p><small>Reflect this in risks and next actions.</small></article>
+                <article class="review-finding severity-pass"><span>approved</span><strong>Artifact consistency</strong><p>Artifacts share the same verdict and evidence IDs.</p><small>Do not introduce new strategy after approval.</small></article>
+              </div>
+            </div>
+          </details>
+        </div>
+      </details>
+
       <section class="content-grid">
         <section class="panel sprint-panel" id="sprint" aria-labelledby="sprint-title">
           <div class="panel-heading">
@@ -108,7 +187,7 @@
           <div class="progress-row">
             <div>
               <strong id="progressLabel">0% complete</strong>
-              <span id="progressAgents">0 of 9 agents finished</span>
+              <span id="progressAgents">0 of 11 agents finished</span>
             </div>
             <div class="progress-track"><span id="progressBar"></span></div>
           </div>

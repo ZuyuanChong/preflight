@@ -4,6 +4,11 @@ export type EvidenceKind = "source" | "assumption";
 export type QualitySeverity = "pass" | "warn" | "fail";
 export type RunStatus = "idle" | "starting" | "running" | "complete" | "failed";
 export type ArtifactDepth = "executive" | "detailed";
+export type AgentType = "orchestrator" | "intake" | "specialist" | "review" | "finalization";
+export type WorkflowMode = "sequential" | "parallel";
+export type HandoffStatus = "queued" | "sent" | "accepted" | "revision_requested" | "blocked";
+export type MemoryVisibility = "shared" | "local";
+export type MemoryKind = "user_preference" | "assumption" | "decision" | "evidence_rule" | "local_note";
 
 export interface VentureBrief {
   idea: string;
@@ -19,12 +24,82 @@ export interface VentureBrief {
 export interface AgentRun {
   id: string;
   agentName: string;
+  agentType: AgentType;
   role: string;
   status: AgentStatus;
   startedAt?: string;
   completedAt?: string;
   logs: string[];
   summary: string;
+}
+
+export interface AgentContract {
+  id: string;
+  agentName: string;
+  agentType: AgentType;
+  purpose: string;
+  coreResponsibilities: string[];
+  inputs: string[];
+  outputs: string[];
+  toolsOrDataSources: string[];
+  mustNotDo: string[];
+  handoffConditions: string[];
+  successCriteria: string[];
+  worksInParallelWith?: string[];
+}
+
+export interface OrchestrationStep {
+  id: string;
+  order: number;
+  title: string;
+  mode: WorkflowMode;
+  agents: string[];
+  trigger: string;
+  output: string;
+  status: "ready" | "running" | "complete";
+}
+
+export interface AgentHandoff {
+  id: string;
+  fromAgent: string;
+  toAgent: string;
+  taskCompleted: string;
+  keyFindings: string[];
+  remainingIssues: string[];
+  assumptions: string[];
+  recommendedNextStep: string;
+  status: HandoffStatus;
+}
+
+export interface MemoryItem {
+  id: string;
+  kind: MemoryKind;
+  ownerAgent: string;
+  title: string;
+  detail: string;
+  visibility: MemoryVisibility;
+}
+
+export interface ReviewFinding {
+  id: string;
+  reviewerAgent: string;
+  severity: QualitySeverity;
+  check: string;
+  finding: string;
+  requiredAction: string;
+  status: "approved" | "revision_required" | "resolved";
+}
+
+export interface MultiAgentSystem {
+  overview: string;
+  operatingMode: "demo-deterministic" | "live-server" | "static-fallback";
+  agents: AgentContract[];
+  workflow: OrchestrationStep[];
+  handoffs: AgentHandoff[];
+  memory: MemoryItem[];
+  reviewFindings: ReviewFinding[];
+  communicationProtocol: string[];
+  finalOutputRules: string[];
 }
 
 export interface EvidenceItem {
@@ -97,6 +172,7 @@ export interface PreflightRun {
   status: RunStatus;
   brief: VentureBrief;
   agents: AgentRun[];
+  multiAgentSystem: MultiAgentSystem;
   evidence: EvidenceItem[];
   qualityIssues: QualityIssue[];
   scorecard: VentureScorecard;

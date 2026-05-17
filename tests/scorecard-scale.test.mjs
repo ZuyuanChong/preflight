@@ -5,13 +5,15 @@ import ts from "typescript";
 
 const agentNames = [
   "Managing Partner",
-  "Framer",
-  "Market Scout",
-  "Customer Analyst",
-  "Product Architect",
+  "Intake and Clarification",
+  "Venture Framer",
+  "Market Evidence",
+  "Customer and ICP",
+  "Product Strategy",
   "Business Modeler",
   "Growth Strategist",
   "Red Team Critic",
+  "Quality Control",
   "Artifact Producer"
 ];
 
@@ -28,6 +30,10 @@ function loadOpenAIPreflightModule() {
   const require = (id) => {
     if (id === "@/lib/artifacts") {
       return { buildArtifacts: () => [] };
+    }
+
+    if (id === "@/lib/multi-agent") {
+      return { buildMultiAgentSystem: () => ({}) };
     }
 
     if (id === "@/data/demo-run") {

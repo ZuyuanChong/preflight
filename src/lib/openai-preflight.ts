@@ -1,5 +1,6 @@
 import { buildArtifacts } from "@/lib/artifacts";
 import { demoAgents } from "@/data/demo-run";
+import { buildMultiAgentSystem } from "@/lib/multi-agent";
 import type {
   AgentRun,
   Artifact,
@@ -63,6 +64,8 @@ Rules:
 - For quality issue artifactId, use one of: artifact-founder-memo, artifact-market-brief, artifact-prd, artifact-pitch-deck, artifact-unit-economics, artifact-gtm, artifact-red-team.
 - Do not generate the final artifacts. The application will format artifacts locally from your blueprint, so your JSON must contain concrete source material for founder-ready deliverables.
 - Write for a founder deciding what to do next, not for a generic advice blog.
+- Treat this as a multi-agent system. The agentSummaries array must cover these exact agents: Managing Partner, Intake and Clarification, Venture Framer, Market Evidence, Customer and ICP, Product Strategy, Business Modeler, Growth Strategist, Red Team Critic, Quality Control, Artifact Producer.
+- Keep agent responsibilities distinct: Market Evidence owns sources and assumptions; Customer and ICP owns buyer pain; Product Strategy owns MVP scope; Business Modeler owns pricing risk; Growth Strategist owns channels and experiments; Red Team Critic challenges; Quality Control reviews; Artifact Producer only formats approved content.
 - Include at least 4 specific assumptions, 4 unknowns, 4 next actions, 4 risks, 4 evidence items, 5 quality issues, and 5 red-team objections.
 - Make the blueprint rich enough to support these artifact sections: Founder Memo decision, rationale, what must be true, wedge, risks, 7-day validation plan, interview questions, pivot/kill triggers; Market Brief category, target segment, substitutes, evidence, assumptions, market risks, validation plan; PRD personas, workflows, MVP features, non-goals, acceptance criteria, metrics, edge cases; Pitch Deck 10 slides; Unit Economics pricing assumptions, cost drivers, scenarios, sensitivity risks; GTM ICP, positioning, channels, first 10 users, experiments, messaging, metrics; Red-Team strongest objections, failure modes, evidence gaps, disproof tests.
 - Scorecard values must be integer confidence scores from 0 to 100 because the product displays them as a 0-100 confidence read. Do not use a 0-10 scale; return 80 for an eight-out-of-ten signal, not 8.
@@ -239,6 +242,8 @@ export async function generateOpenAIPreflight(input: VentureBrief, apiKey: strin
     finalVerdict,
     evidence.map((item) => item.id)
   );
+  const qualityIssues = normalizeQualityIssues(generated.qualityIssues, artifacts);
+  const redTeamObjections = cleanList(generated.redTeamObjections, fallbackRedTeamObjections(normalizedBrief));
 
   return {
     id: `live-${Date.now()}`,
@@ -246,11 +251,19 @@ export async function generateOpenAIPreflight(input: VentureBrief, apiKey: strin
     status: "complete",
     brief: normalizedBrief,
     agents: buildAgentRuns(generated.agentSummaries),
+    multiAgentSystem: buildMultiAgentSystem({
+      brief: normalizedBrief,
+      mode: "live",
+      evidence,
+      qualityIssues,
+      verdict: finalVerdict,
+      redTeamObjections
+    }),
     evidence,
-    qualityIssues: normalizeQualityIssues(generated.qualityIssues, artifacts),
+    qualityIssues,
     scorecard: normalizeScorecard(generated.scorecard),
     finalVerdict,
-    redTeamObjections: cleanList(generated.redTeamObjections, fallbackRedTeamObjections(normalizedBrief)),
+    redTeamObjections,
     artifacts
   };
 }
@@ -385,7 +398,7 @@ function normalizeEvidence(items: Array<Partial<EvidenceItem>>): EvidenceItem[] 
         summary: safeText(item.summary, "No source-backed summary was provided."),
         confidence: normalizeConfidence(item.confidence),
         freshness: kind === "source" ? safeText(item.freshness, TODAY) : undefined,
-        agentName: safeText(item.agentName, "Market Scout")
+        agentName: safeText(item.agentName, "Market Evidence")
       } satisfies EvidenceItem;
     })
     .filter((item) => item.claim.length > 0);

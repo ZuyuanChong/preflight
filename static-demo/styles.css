@@ -63,7 +63,7 @@ a {
   padding: 10px 2px;
 }
 
-.topbar div {
+.brand-lockup {
   display: flex;
   align-items: baseline;
   gap: 12px;
@@ -74,45 +74,60 @@ a {
   font-size: 21px;
 }
 
-.topbar span,
-.topbar a {
+.brand-lockup span {
   color: var(--muted);
   font-size: 13px;
   text-decoration: none;
 }
 
-.topbar nav {
+.topbar-status {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
 }
 
-.topbar a {
+.topbar-status > span:not(.status-pill) {
   border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 8px 10px;
   background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 10px;
 }
 
 .journey-strip {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 16px;
 }
 
-.journey-strip article {
+.journey-card {
   position: relative;
   overflow: hidden;
+  display: grid;
+  gap: 3px;
   min-width: 0;
   border: 1px solid rgba(196, 210, 215, 0.85);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.78);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  min-height: 0;
   padding: 12px;
+  text-align: left;
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
-.journey-strip article::before {
+.journey-card::before {
   position: absolute;
   inset: 0 auto 0 0;
   width: 3px;
@@ -120,22 +135,68 @@ a {
   content: "";
 }
 
-.journey-strip span {
+.journey-card:hover,
+.journey-card:focus-visible {
+  border-color: rgba(20, 124, 120, 0.5);
+  box-shadow: 0 12px 26px rgba(24, 33, 39, 0.08);
+  transform: translateY(-1px);
+}
+
+.journey-card-active {
+  border-color: rgba(20, 124, 120, 0.5);
+  background: linear-gradient(135deg, #effafa, #fff);
+}
+
+.journey-card-attention::before {
+  background: var(--warn);
+}
+
+.journey-card-locked {
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.journey-card-locked::before {
+  background: var(--line-strong);
+}
+
+.journey-card span {
   display: block;
   color: var(--accent-dark);
   font-size: 11px;
   font-weight: 900;
 }
 
-.journey-strip strong {
+.journey-card strong {
   display: block;
   margin: 3px 0;
   color: var(--ink);
 }
 
-.journey-strip small {
+.journey-card small {
   color: var(--muted);
   font-size: 12px;
+}
+
+.journey-card em {
+  width: fit-content;
+  border-radius: 999px;
+  background: #eef3f5;
+  color: #40515b;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  margin-top: 4px;
+  padding: 5px 7px;
+}
+
+.journey-card-active em {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+
+.journey-card-attention em {
+  background: var(--warn-soft);
+  color: var(--warn);
 }
 
 .workspace-grid,
@@ -397,6 +458,238 @@ button:disabled {
 
 .brief-stack p {
   margin-bottom: 8px;
+}
+
+.multi-agent-panel {
+  margin-top: 16px;
+}
+
+.collapsible-panel {
+  padding: 0;
+}
+
+.collapsible-summary,
+.collapsible-card-summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.collapsible-summary::-webkit-details-marker,
+.collapsible-card-summary::-webkit-details-marker {
+  display: none;
+}
+
+.collapsible-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+}
+
+.collapsible-summary h2 {
+  margin-bottom: 7px;
+}
+
+.collapsible-summary p:last-child {
+  margin-bottom: 0;
+}
+
+.summary-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.collapse-indicator {
+  position: relative;
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--accent-dark);
+}
+
+.collapse-indicator::before {
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg) translate(-1px, -1px);
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  content: "";
+  transition: transform 160ms ease;
+}
+
+.collapsible-panel[open] > .collapsible-summary .collapse-indicator::before,
+.collapsible-card[open] > .collapsible-card-summary .collapse-indicator::before {
+  transform: rotate(225deg) translate(-1px, -1px);
+}
+
+.collapsible-body {
+  border-top: 1px solid var(--line);
+  padding: 0 18px 18px;
+}
+
+.system-overview {
+  max-width: 84ch;
+  color: #30404a;
+}
+
+.multi-agent-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 12px 0 16px;
+}
+
+.architecture-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.architecture-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+  padding: 0;
+}
+
+.architecture-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 0;
+  padding: 14px;
+}
+
+.architecture-heading h3 {
+  margin-bottom: 0;
+}
+
+.collapsible-card-summary > span:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.collapsible-card-summary small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.collapsible-card-body {
+  border-top: 1px solid var(--line);
+  padding: 14px;
+}
+
+.architecture-heading > span:not(.collapse-indicator),
+.workflow-list small,
+.review-finding small,
+.contract-group small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.agent-contract-groups {
+  display: grid;
+  gap: 12px;
+}
+
+.contract-group {
+  display: grid;
+  gap: 8px;
+}
+
+.contract-group > span,
+.workflow-list li div span,
+.review-finding > span {
+  color: var(--accent-dark);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.contract-group article,
+.review-finding {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 11px;
+}
+
+.contract-group article p,
+.review-finding p {
+  margin: 5px 0;
+  font-size: 13px;
+}
+
+.workflow-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: workflow-step;
+}
+
+.workflow-list li {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 11px 11px 11px 44px;
+  counter-increment: workflow-step;
+}
+
+.workflow-list li::before {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  content: counter(workflow-step);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.workflow-list p {
+  margin-bottom: 0;
+  font-size: 13px;
+}
+
+.review-loop-card {
+  margin-top: 14px;
+}
+
+.review-finding-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.review-finding {
+  border-top: 4px solid var(--pass);
+}
+
+.review-finding.severity-warn {
+  border-top-color: var(--warn);
+}
+
+.review-finding.severity-fail {
+  border-top-color: var(--fail);
 }
 
 .progress-row {
@@ -1061,7 +1354,9 @@ button:disabled {
 @media (max-width: 980px) {
   .workspace-grid,
   .content-grid,
-  .lower-grid {
+  .lower-grid,
+  .architecture-grid,
+  .review-finding-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1088,14 +1383,13 @@ button:disabled {
     flex-direction: column;
   }
 
-  .topbar nav {
+  .topbar-status {
     justify-content: flex-start;
     width: 100%;
   }
 
-  .topbar a {
-    flex: 1 1 100%;
-    text-align: center;
+  .topbar-status > span {
+    flex: 1 1 auto;
   }
 
   .panel {
@@ -1131,6 +1425,25 @@ button:disabled {
   .scorecard-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .architecture-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .collapsible-card-summary {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .collapsible-summary {
+    flex-direction: column;
+  }
+
+  .summary-actions {
+    justify-content: space-between;
+    width: 100%;
   }
 
   .score-row strong {
