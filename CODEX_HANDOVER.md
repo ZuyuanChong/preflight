@@ -16,6 +16,7 @@ The priority is a working, polished demo. Do not spend the first hour building i
 2. `PLAN.md` for product scope, data contracts, and acceptance criteria.
 3. This file for the one-hour runbook.
 4. `README.md` for the public-facing project overview, demo framing, and submission notes.
+5. `RALPH_LOOP_LAUNCH.md` for the human pre-run checklist and copy-ready Goal prompt.
 
 ## External Constraints
 

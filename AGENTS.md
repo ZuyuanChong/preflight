@@ -14,6 +14,7 @@ Before implementation, read:
 2. `README.md`
 3. `PLAN.md`
 4. `CODEX_HANDOVER.md`
+5. `RALPH_LOOP_LAUNCH.md`
 
 If instructions conflict, use this priority:
 

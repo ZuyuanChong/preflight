@@ -12,7 +12,7 @@
 
 ## Companion Handoff
 
-Use `AGENTS.md` as the mandatory project-level Codex operating manual and `CODEX_HANDOVER.md` as the operator document for the unattended one-hour Codex Goal run. This plan defines what to build; `AGENTS.md` defines required skills/plugins, autonomous triggers, fallbacks, and verification gates; the handoff defines how Codex should execute, recover, verify, and summarize the autonomous build.
+Use `AGENTS.md` as the mandatory project-level Codex operating manual, `CODEX_HANDOVER.md` as the operator document for the unattended one-hour Codex Goal run, and `RALPH_LOOP_LAUNCH.md` as the human pre-run checklist. This plan defines what to build; `AGENTS.md` defines required skills/plugins, autonomous triggers, fallbacks, and verification gates; the handoff defines how Codex should execute, recover, verify, and summarize the autonomous build.
 
 ## Required Autonomous Capabilities
 
@@ -153,6 +153,7 @@ Only after the app builds locally:
 If the repo has no app yet, create a minimal app in the repository root. Preserve existing docs.
 
 - `AGENTS.md` - mandatory Codex operating instructions, skill triggers, fallbacks, and verification gates.
+- `RALPH_LOOP_LAUNCH.md` - human pre-run checklist and copy-ready Ralph loop Goal prompt.
 - `package.json` - scripts for `dev`, `build`, `typecheck`, and dependencies.
 - `tsconfig.json` - TypeScript config.
 - `next.config.mjs` - Next config if using Next.js.

@@ -13,8 +13,9 @@ This repository is set up for an autonomous Codex Goals build. The latest implem
 - [AGENTS.md](./AGENTS.md) - mandatory Codex operating manual with skill/plugin triggers, autonomous rules, fallbacks, and verification gates.
 - [PLAN.md](./PLAN.md) - product plan, build priorities, data contracts, acceptance checklist.
 - [CODEX_HANDOVER.md](./CODEX_HANDOVER.md) - exact one-hour Codex handoff, fallback path, verification rules, seeded demo content.
+- [RALPH_LOOP_LAUNCH.md](./RALPH_LOOP_LAUNCH.md) - human launch checklist and copy-ready Ralph loop Goal prompt.
 
-Codex must read all three files before making implementation changes.
+Codex must read the operating files before making implementation changes.
 
 ## Why This Fits Ralphthon Impact
 
