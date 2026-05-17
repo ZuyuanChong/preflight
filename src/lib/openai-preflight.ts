@@ -65,6 +65,7 @@ Rules:
 - Write for a founder deciding what to do next, not for a generic advice blog.
 - Include at least 4 specific assumptions, 4 unknowns, 4 next actions, 4 risks, 4 evidence items, 5 quality issues, and 5 red-team objections.
 - Make the blueprint rich enough to support these artifact sections: Founder Memo decision, rationale, what must be true, wedge, risks, 7-day validation plan, interview questions, pivot/kill triggers; Market Brief category, target segment, substitutes, evidence, assumptions, market risks, validation plan; PRD personas, workflows, MVP features, non-goals, acceptance criteria, metrics, edge cases; Pitch Deck 10 slides; Unit Economics pricing assumptions, cost drivers, scenarios, sensitivity risks; GTM ICP, positioning, channels, first 10 users, experiments, messaging, metrics; Red-Team strongest objections, failure modes, evidence gaps, disproof tests.
+- Scorecard values must be integer confidence scores from 0 to 100 because the product displays them as a 0-100 confidence read. Do not use a 0-10 scale; return 80 for an eight-out-of-ten signal, not 8.
 - Make a hard decision: Proceed, Pivot, Pause, or Kill. Avoid generic optimism.
 - Be concrete about the user's segment, substitute workflow, buying trigger, and validation behavior.`;
 
@@ -469,17 +470,19 @@ function normalizeFinalVerdict(candidate: Partial<FinalVerdict>): FinalVerdict {
   };
 }
 
-function normalizeScorecard(candidate: Partial<VentureScorecard>): VentureScorecard {
+export function normalizeScorecard(candidate: Partial<VentureScorecard>): VentureScorecard {
+  const usesTenPointScale = scorecardUsesTenPointScale(candidate);
+
   return {
-    pain: score(candidate.pain),
-    buyerClarity: score(candidate.buyerClarity),
-    timing: score(candidate.timing),
-    competition: score(candidate.competition),
-    distribution: score(candidate.distribution),
-    monetization: score(candidate.monetization),
-    feasibility: score(candidate.feasibility),
-    evidenceQuality: score(candidate.evidenceQuality),
-    redTeamSeverity: score(candidate.redTeamSeverity)
+    pain: score(candidate.pain, usesTenPointScale),
+    buyerClarity: score(candidate.buyerClarity, usesTenPointScale),
+    timing: score(candidate.timing, usesTenPointScale),
+    competition: score(candidate.competition, usesTenPointScale),
+    distribution: score(candidate.distribution, usesTenPointScale),
+    monetization: score(candidate.monetization, usesTenPointScale),
+    feasibility: score(candidate.feasibility, usesTenPointScale),
+    evidenceQuality: score(candidate.evidenceQuality, usesTenPointScale),
+    redTeamSeverity: score(candidate.redTeamSeverity, usesTenPointScale)
   };
 }
 
@@ -534,12 +537,30 @@ function normalizeConfidence(value: unknown): EvidenceItem["confidence"] {
   return value === "low" || value === "medium" || value === "high" ? value : "medium";
 }
 
-function score(value: unknown): number {
-  if (typeof value !== "number" || Number.isNaN(value)) {
+function scorecardUsesTenPointScale(candidate: Partial<VentureScorecard>): boolean {
+  const values = [
+    candidate.pain,
+    candidate.buyerClarity,
+    candidate.timing,
+    candidate.competition,
+    candidate.distribution,
+    candidate.monetization,
+    candidate.feasibility,
+    candidate.evidenceQuality,
+    candidate.redTeamSeverity
+  ].filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+
+  return values.length >= 5 && values.every((value) => value >= 0 && value <= 10) && values.some((value) => value > 0);
+}
+
+function score(value: unknown, usesTenPointScale = false): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
     return 50;
   }
 
-  return Math.max(0, Math.min(100, Math.round(value)));
+  const scaledValue = usesTenPointScale ? value * 10 : value;
+
+  return Math.max(0, Math.min(100, Math.round(scaledValue)));
 }
 
 function isHttpUrl(value: string): boolean {

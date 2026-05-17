@@ -474,3 +474,57 @@ Known notes:
 
 - Browser plugin was not available in this session.
 - Playwright CLI fallback required an `npx` package approval that was not granted, so verification focused on automated artifact contracts and Next.js build/typecheck.
+
+## Scorecard Scale Fix - 2026-05-17
+
+Branch:
+
+- Confirmed working branch with `git -c safe.directory=C:/Users/zuyua/OneDrive/Desktop/digital-app/preflight status --short --branch`: `main...origin/main`.
+
+Root cause:
+
+- The demo scorecard data and UI label already use a 0-100 confidence scale, but the live OpenAI generation prompt did not explicitly reject 0-10-style scores.
+- The live scorecard normalizer clamped values to 0-100 but did not promote a full ten-point response, so generated values like 8, 7, and 6 could render beside the `0-100 confidence read` label.
+
+What changed:
+
+- Added explicit live-generation instruction in `src/lib/openai-preflight.ts`: scorecard values must be 0-100 integer confidence scores, not 0-10 scores.
+- Exported and hardened `normalizeScorecard` so a full ten-point-shaped scorecard is promoted to the UI's 0-100 scale while already-percentage scorecards remain unchanged and clamped.
+- Added `tests/scorecard-scale.test.mjs` and `npm run test:scorecard` to cover the regression.
+
+Verification:
+
+- `npm.cmd run test:scorecard` passed: 3/3 tests.
+- `npm.cmd run test:artifacts` passed: 2/2 tests.
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed. Build emitted nonfatal Webpack cache snapshot warnings after successful route generation.
+- `npm.cmd run dev -- --hostname 127.0.0.1 --port 3000` attempted through the dev script and failed with `Error: listen EACCES: permission denied 127.0.0.1:3000`.
+- `npm.cmd run dev -- --hostname 127.0.0.1 --port 3001` started successfully at `http://127.0.0.1:3001` and reported `Ready in 1855ms`.
+- Browser plugin verification on `http://127.0.0.1:3001`:
+  - Page identity: title `Preflight`, URL `http://127.0.0.1:3001/`.
+  - Completed demo interaction: clicked `Load completed demo`.
+  - Scorecard rows rendered 0-100 values and matching widths: Pain 78/78%, Timing 76/76%, Competition pressure 44/44%, Buyer clarity 72/72%, Distribution 64/64%, Monetization 48/48%, Feasibility 86/86%, Evidence quality 62/62%, Red-team severity 81/81%.
+  - Desktop viewport check: `innerWidth` 1280, `scrollWidth` 1265, no relevant console errors or warnings.
+  - Mobile viewport check: `innerWidth` 390, `scrollWidth` 375, same 0-100 scorecard values and no relevant console errors or warnings.
+
+Known notes:
+
+- The live OpenAI endpoint was not called during verification because the regression is covered by the normalizer contract and prompt text without requiring API/network availability.
+- `Start-Process` hit the existing Windows `Path`/`PATH` environment collision, so the dev server was launched through the Node-backed browser verification runtime instead.
+
+GitHub checkpoint:
+
+- Commit/push was attempted from `main` after verification.
+- Staging command:
+
+```powershell
+git -c safe.directory=C:/Users/zuyua/OneDrive/Desktop/digital-app/preflight add IMPLEMENTATION_LOG.md package.json src/lib/openai-preflight.ts tests/scorecard-scale.test.mjs
+```
+
+- Result:
+
+```text
+fatal: Unable to create 'C:/Users/zuyua/OneDrive/Desktop/digital-app/preflight/.git/index.lock': Permission denied
+```
+
+- No commit or push was created. The latest useful state is present in the working tree on `main`.
