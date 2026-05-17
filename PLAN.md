@@ -4,9 +4,9 @@
 
 **Goal:** Build **Preflight**, a demo-ready AI Venture Preflight app where a founder enters a startup idea and receives an evidence-backed company blueprint with verdict, market proof, ICP, MVP scope, pricing, GTM plan, red-team critique, quality gates, and founder artifacts.
 
-**Architecture:** Start with one polished Next.js app that can run fully in demo mode without live APIs. Use typed local data and a simulated sprint to guarantee the Ralphthon demo works, then add optional server-side OpenAI and web-evidence paths only after the app is already demoable.
+**Architecture:** Start with one polished Next.js app that can run fully in demo mode without live APIs. Use typed local data and a simulated sprint to guarantee the Ralphthon demo works, then add optional server-side Tavily web-evidence paths only after the app is already demoable. Implementation is performed by Codex Goals through the user's ChatGPT Pro subscription, not by app-side OpenAI API usage.
 
-**Tech Stack:** Next.js App Router, TypeScript, CSS or Tailwind, local typed mock data, optional server-side OpenAI API, optional search provider, Vercel deployment if time permits.
+**Tech Stack:** Next.js App Router, TypeScript, CSS or Tailwind, local typed mock data, optional server-side Tavily search/evidence provider, Vercel deployment if time permits.
 
 ---
 
@@ -25,7 +25,7 @@ Codex must automatically invoke these capabilities when their trigger conditions
 - `build-web-apps:frontend-testing-debugging` for local UI debugging.
 - `build-web-apps:react-best-practices` after React/Next.js edits when available.
 - Browser plugin first, then Playwright or webapp-testing fallback, for local visual verification.
-- OpenAI Developers skills only after demo mode works and live server-side generation is being added.
+- Codex Goals through ChatGPT Pro for implementation; do not require `OPENAI_API_KEY` for the primary build.
 - Tavily skills only after demo mode works and real web evidence is being added.
 - Vercel skills only after local build verification and only if auth is already available.
 - Git/GitHub checkpoint pushes when the autonomous publishing rules in `AGENTS.md` are met.
@@ -64,7 +64,7 @@ The OpenAI Goals cookbook frames a Goal as a scoped completion contract with a m
 
 Target the **Impact** track. Codex Goals and Ralph-loop execution are the build method, not the main product category. Judges should understand the human value in the first 30 seconds: founders waste time building weak ideas; Preflight helps them decide what deserves to exist.
 
-The first hour must produce a reliable, visual, local demo. A simulated sprint with typed evidence is acceptable for the first milestone because the guide rewards a working live demo. Live OpenAI calls, live web search, PPTX export, a custom Codex runner, and generated product deployment are secondary.
+The first hour must produce a reliable, visual, local demo. A simulated sprint with typed evidence is acceptable for the first milestone because the guide rewards a working live demo. Live Tavily search, PPTX export, a custom Codex runner, and generated product deployment are secondary. Do not spend the first hour adding app-side OpenAI API calls; the autonomous implementation agent already runs through Codex Goals using the user's ChatGPT Pro subscription.
 
 ## One-Hour Master Goal
 
@@ -104,14 +104,14 @@ Only after P0 works:
 - Add `POST /api/runs` to create a run.
 - Add `GET /api/runs/[id]` or equivalent to read the latest run state.
 - Keep state local and simple: file JSON, in-memory seed, or local browser state is acceptable for the hackathon.
-- If OpenAI credentials exist, call models only from server-side code.
-- If credentials do not exist, return the seeded demo run and show "Demo mode".
+- Do not require OpenAI API credentials for this stage.
+- Return the seeded demo run and show "Demo mode" unless an optional live evidence provider is ready.
 
 ### P2: Live Evidence
 
 Only after P0 and P1 work:
 
-- Add search provider integration if a key exists.
+- Add Tavily search provider integration if `TAVILY_API_KEY` exists, falling back to `TAVILY_API` if present.
 - Store each evidence item with URL, title, summary, confidence, freshness, and related claim.
 - Label uncertain findings as assumptions instead of pretending they are sourced.
 - If search fails, keep the source-ready interface and seeded citations.
@@ -181,6 +181,8 @@ If Next.js dependency installation fails, create the fallback:
 - `static-demo/styles.css`
 - `static-demo/app.js`
 - `static-demo/README.md`
+- `.env.example`
+- `.gitignore`
 
 The fallback must still show intake, sprint progress, blueprint, evidence, quality gates, and artifacts.
 
@@ -353,7 +355,7 @@ Three-minute flow:
 Run a second Goal:
 
 ```text
-/goal Add optional live server-side sprint generation to the existing Preflight demo without breaking demo mode. First read AGENTS.md and use OpenAI docs/platform-key skills when available. Use OPENAI_API_KEY only on the server, return structured JSON matching the existing types, keep seeded fallback active when credentials or network are unavailable, and verify one live or fallback run renders fully.
+/goal Add optional live Tavily-backed evidence collection to the existing Preflight demo without breaking demo mode. First read AGENTS.md and use Tavily skills when available. Use TAVILY_API_KEY server-side, falling back to TAVILY_API if present, return structured evidence items matching the existing types, keep seeded fallback active when credentials or network are unavailable, and verify one live or fallback evidence run renders fully.
 ```
 
 Then run a final reliability Goal:

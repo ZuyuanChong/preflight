@@ -37,8 +37,8 @@ These capabilities are expected to be available in this Codex environment. Use t
 | After editing React/Next.js files | `build-web-apps:react-best-practices` when available | Review for component structure, state, accessibility, and performance issues. |
 | Local UI verification | Browser plugin first, then `playwright` or `webapp-testing` fallback | Open the local app, exercise the core demo path, and inspect desktop and mobile layouts. |
 | Before claiming completion | `superpowers:verification-before-completion` | Run fresh verification commands and inspect output before any completion claim. |
-| Adding OpenAI live generation | `openai-docs` and `openai-developers:openai-platform-api-key` | Use current OpenAI guidance. Keep API keys server-side. Fall back to demo mode when credentials are absent. |
-| Adding web evidence or citations | Tavily skills: `tavily-search`, `tavily-extract`, or `tavily-research` | Gather real URLs and summaries. If unavailable, keep assumption labels and seeded citations. |
+| Adding model-generated product behavior | Codex Goals via ChatGPT Pro subscription | Do not require `OPENAI_API_KEY` for the first implementation. Codex itself is the autonomous coding agent. App runtime AI generation is optional later work only. |
+| Adding web evidence or citations | Tavily skills: `tavily-search`, `tavily-extract`, or `tavily-research` | Use server-side Tavily with `TAVILY_API_KEY`, falling back to `TAVILY_API` if present. Gather real URLs and summaries. If unavailable, keep assumption labels and seeded citations. |
 | Deploying | Vercel plugin or `vercel-deploy` | Deploy only after local build passes and auth is already available. Do not break local demo mode for deployment. |
 | Publishing repo work | GitHub plugin, `github:yeet`, or local `git` | Commit and push autonomously when the checkpoint rules below say to do so and a remote/auth are available. Preserve user changes. |
 
@@ -57,7 +57,7 @@ Use this strict order:
 7. Optional web evidence provider.
 8. Optional deployment.
 
-Do not start optional live AI, Tavily, Vercel, Supabase, Figma, PPTX, PDF, auth, database, or generated product deployment until the local Preflight demo works.
+Do not start optional live runtime AI, Tavily, Vercel, Supabase, Figma, PPTX, PDF, auth, database, or generated product deployment until the local Preflight demo works. The implementation agent itself runs through Codex Goals using the user's ChatGPT Pro subscription, not through app-side OpenAI API usage.
 
 ## Autonomous Decision Rules
 
@@ -66,10 +66,11 @@ Do not start optional live AI, Tavily, Vercel, Supabase, Figma, PPTX, PDF, auth,
 - Prefer deterministic demo data over fragile live calls.
 - Prefer simple local state over a database.
 - Prefer a static fallback over stopping if dependency installation is blocked.
-- Treat missing API keys, missing network, or missing deployment auth as expected conditions.
+- Treat missing Tavily keys, missing network, or missing deployment auth as expected conditions.
 - Record every blocker and fallback in `IMPLEMENTATION_LOG.md`.
 - Never invent fake citations. Unsourced claims must be marked as assumptions.
 - Never expose API keys in client code.
+- Never commit `.env`, `.env.local`, or real secrets. `.env.example` is the only env file that may be committed.
 - Never present planning docs as shipped hackathon product code.
 
 ## Autonomous GitHub Checkpoint Rules
@@ -101,8 +102,10 @@ Preferred app stack:
 - TypeScript
 - CSS or Tailwind
 - Local typed demo data
-- Optional server-side OpenAI API
-- Optional search provider
+- Codex Goals through ChatGPT Pro for implementation work
+- Optional server-side Tavily search/evidence provider
+
+Do not require `OPENAI_API_KEY` for the primary autonomous implementation. If future app-runtime AI generation is added, it must be an explicit later enhancement and must not break demo mode.
 
 If Next.js cannot be installed or started, create:
 
@@ -133,8 +136,8 @@ For implementation failures:
 - Build/typecheck failure: inspect the exact error, patch the smallest relevant code, rerun the same command. Retry up to three focused cycles before switching to fallback.
 - Dev server failure: inspect logs, fix config/dependency issues, rerun. If install/network/auth blocks progress, switch to static fallback.
 - Browser/layout failure: fix overflow, clipped text, broken controls, and mobile stacking, then re-open the app.
-- Live API failure: keep demo mode active, show a nonfatal live-mode warning, and log the blocker.
-- Search/citation failure: keep source-ready evidence UI, retain seeded real citations, and label unsourced claims as assumptions.
+- Live app-runtime AI failure: keep demo mode active, show a nonfatal live-mode warning, and log the blocker.
+- Tavily/search/citation failure: keep source-ready evidence UI, retain seeded real citations, and label unsourced claims as assumptions.
 - Deployment failure: keep local demo as canonical, log the error, and do not spend more time unless local demo remains verified.
 - Git push failure: keep local commits, log the exact error, and continue. Do not block the demo on remote publishing unless final submission explicitly requires it.
 

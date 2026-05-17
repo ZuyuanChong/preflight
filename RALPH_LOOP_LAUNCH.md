@@ -55,21 +55,23 @@ Expected:
 
 During implementation, Codex is authorized by `AGENTS.md` to commit and push useful checkpoints to `origin` when remote/auth are available.
 
-## Step 3: Decide API Mode
+## Step 3: Decide Runtime Credential Mode
 
 For the first autonomous hour, use demo mode.
 
-No API keys are required for the first successful build.
+No OpenAI API key is required for the first successful build. You will be running implementation through Codex Goals using your ChatGPT Pro subscription, not app-side OpenAI API usage.
 
-Optional live-mode env vars for later:
+Optional Tavily live-evidence env vars for later:
 
 ```text
-OPENAI_API_KEY=
 TAVILY_API_KEY=
+TAVILY_API=
 PREFLIGHT_MODE=demo
 ```
 
-Do not block the first run on OpenAI, Tavily, Vercel, Supabase, auth, or database setup. The documentation instructs Codex to build the local demo first and treat missing optional integrations as nonfatal.
+Use `TAVILY_API_KEY` if possible. If your local environment already uses `TAVILY_API`, Codex is instructed to support it as a fallback alias. Do not commit the real Tavily key. Put it in `.env.local` or the Codex runtime environment only.
+
+Do not block the first run on OpenAI API, Tavily, Vercel, Supabase, auth, or database setup. The documentation instructs Codex to build the local demo first and treat missing optional integrations as nonfatal.
 
 ## Step 4: Pre-Approve Or Avoid Runtime Permission Blocks
 
@@ -99,7 +101,7 @@ Do not worry if live API or Vercel auth is missing. The first run should still s
 Paste this exact Goal into Codex Goals for the Ralph loop:
 
 ```text
-/goal Build a demo-ready Preflight web app in this repository within the current autonomous work window. First read and follow AGENTS.md, PLAN.md, CODEX_HANDOVER.md, README.md, and RALPH_LOOP_LAUNCH.md. Invoke the required skills/plugins in AGENTS.md when their trigger conditions appear. The app must let a judge enter a startup idea, run or simulate an AI venture preflight sprint, and show a polished Intake, Live Sprint, Blueprint, Quality Gate, Red Team, Evidence Ledger, and Artifacts experience. Build demo mode first and keep it working without API keys. Verify by running the local app, checking desktop and mobile layouts with Browser/Playwright/webapp-testing, and running typecheck/build where available. Commit and push useful checkpoints to origin according to AGENTS.md when remote/auth are available. Preserve README.md, PLAN.md, CODEX_HANDOVER.md, AGENTS.md, and RALPH_LOOP_LAUNCH.md. Document generated work as hackathon-built, avoid Streamlit/basic RAG framing, and record commands, verification evidence, fallbacks, GitHub push status, and known gaps in IMPLEMENTATION_LOG.md. If dependency installation or dev server startup is blocked, create a static fallback demo and document the exact blocker and launch command.
+/goal Build a demo-ready Preflight web app in this repository within the current autonomous work window. First read and follow AGENTS.md, PLAN.md, CODEX_HANDOVER.md, README.md, and RALPH_LOOP_LAUNCH.md. Invoke the required skills/plugins in AGENTS.md when their trigger conditions appear. Implement using Codex Goals through the user's ChatGPT Pro subscription; do not require OPENAI_API_KEY or app-side OpenAI API usage for the primary build. The app must let a judge enter a startup idea, run or simulate an AI venture preflight sprint, and show a polished Intake, Live Sprint, Blueprint, Quality Gate, Red Team, Evidence Ledger, and Artifacts experience. Build demo mode first and keep it working without API keys. If Tavily evidence is added after demo mode works, use TAVILY_API_KEY server-side and fall back to TAVILY_API if present; never expose or commit secrets. Verify by running the local app, checking desktop and mobile layouts with Browser/Playwright/webapp-testing, and running typecheck/build where available. Commit and push useful checkpoints to origin according to AGENTS.md when remote/auth are available. Preserve README.md, PLAN.md, CODEX_HANDOVER.md, AGENTS.md, RALPH_LOOP_LAUNCH.md, .gitignore, and .env.example. Document generated work as hackathon-built, avoid Streamlit/basic RAG framing, and record commands, verification evidence, fallbacks, GitHub push status, and known gaps in IMPLEMENTATION_LOG.md. If dependency installation or dev server startup is blocked, create a static fallback demo and document the exact blocker and launch command.
 ```
 
 ## Step 6: Walk Away Rules
@@ -109,7 +111,7 @@ After starting the Goal:
 - Do not edit files manually.
 - Do not steer the implementation unless Codex explicitly stops as blocked.
 - Do not interrupt if Codex switches to static fallback. That is an approved recovery path.
-- Do not expect live OpenAI, Tavily, or Vercel unless P0 demo mode is already complete.
+- Do not expect app-side live AI, Tavily, or Vercel unless P0 demo mode is already complete.
 
 The intended one-hour result is a working local demo, not a fully live venture research backend.
 
@@ -146,10 +148,10 @@ Then run the app locally using the command in the log.
 
 ## Step 9: Next Goal Options
 
-If the app works locally and you still have time, use this:
+If the app works locally and you still have time for live evidence, use this:
 
 ```text
-/goal Add optional live server-side sprint generation to the existing Preflight demo without breaking demo mode. First read AGENTS.md and use OpenAI docs/platform-key skills when available. Use OPENAI_API_KEY only on the server, return structured JSON matching the existing types, keep seeded fallback active when credentials or network are unavailable, and verify one live or fallback run renders fully. Commit and push the checkpoint to origin when verified.
+/goal Add optional live Tavily-backed evidence collection to the existing Preflight demo without breaking demo mode. First read AGENTS.md and use Tavily skills when available. Use TAVILY_API_KEY server-side, falling back to TAVILY_API if present, return structured evidence items matching the existing types, keep seeded fallback active when credentials or network are unavailable, and verify one live or fallback evidence run renders fully. Commit and push the checkpoint to origin when verified.
 ```
 
 If the app is already demoable and you need submission polish, use this:
@@ -171,8 +173,8 @@ Common acceptable blockers:
 
 Common non-blockers:
 
-- Missing `OPENAI_API_KEY`.
 - Missing `TAVILY_API_KEY`.
+- Missing `TAVILY_API`.
 - Missing Vercel auth.
 - Failed deployment.
 - Search API unavailable.

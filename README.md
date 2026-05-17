@@ -91,7 +91,7 @@ Codex must automatically use the capability matrix in [AGENTS.md](./AGENTS.md). 
 - Use Superpowers execution skills for task execution and verification discipline.
 - Use Build Web Apps skills for frontend implementation and UI debugging.
 - Use Browser first, then Playwright or webapp-testing fallback, for local visual verification.
-- Use OpenAI Developers skills only after demo mode works and only for server-side live generation.
+- Use Codex Goals through the user's ChatGPT Pro subscription for implementation. Do not require `OPENAI_API_KEY` for the primary build.
 - Use Tavily skills only after demo mode works and only for real web evidence.
 - Use Vercel only after local build verification and only if authentication is already available.
 - Commit and push useful checkpoints to GitHub autonomously when the rules in `AGENTS.md` say to do so.
@@ -125,14 +125,14 @@ After demo mode works:
 - Keep seeded fallback active.
 - Do not expose API keys in client code.
 
-### P2: Optional Live AI And Evidence
+### P2: Optional Live Evidence
 
 After local demo and build verification:
 
-- Add server-side OpenAI generation if `OPENAI_API_KEY` exists.
-- Add search/evidence provider if a key exists.
-- Validate all generated output against the existing data contracts.
-- Fall back to demo mode on any live failure.
+- Add server-side Tavily search/evidence if `TAVILY_API_KEY` exists.
+- Accept `TAVILY_API` as a local compatibility alias if that is the only variable available.
+- Validate all evidence output against the existing data contracts.
+- Fall back to seeded demo evidence on any live failure.
 
 ### P3: Submission Polish
 
@@ -151,8 +151,8 @@ Preferred:
 - TypeScript.
 - CSS or Tailwind.
 - Local typed demo data.
-- Optional server-side OpenAI API.
-- Optional search provider.
+- Codex Goals through ChatGPT Pro for implementation work.
+- Optional server-side Tavily search/evidence provider.
 
 Fallback:
 
@@ -230,19 +230,21 @@ Strongest wedge: A founder can see what would have to be true before investing a
 
 ## Environment Variables
 
-Demo mode must work without these.
+Demo mode must work without any keys. The primary autonomous implementation uses Codex Goals through ChatGPT Pro, not app-side OpenAI API usage.
 
 ```text
-OPENAI_API_KEY=
 TAVILY_API_KEY=
+TAVILY_API=
 PREFLIGHT_MODE=demo
 ```
 
 Rules:
 
-- Use `OPENAI_API_KEY` only in server-side code.
-- Treat missing keys as expected, not fatal.
+- Prefer `TAVILY_API_KEY`; support `TAVILY_API` as a fallback alias because the local credential may be named that way.
+- Use Tavily only from server-side code or build-time scripts, never in browser/client code.
+- Treat missing Tavily keys as expected, not fatal.
 - Keep seeded demo mode available at all times.
+- Do not commit real secrets. Use `.env.local` locally and commit only `.env.example`.
 
 ## Verification
 
@@ -311,7 +313,7 @@ If GitHub auth, network, or branch protection blocks a push, Codex must keep wor
 After the first autonomous build succeeds:
 
 ```text
-/goal Add optional live server-side sprint generation to the existing Preflight demo without breaking demo mode. First read AGENTS.md and use OpenAI docs/platform-key skills when available. Use OPENAI_API_KEY only on the server, return structured JSON matching the existing types, keep seeded fallback active when credentials or network are unavailable, and verify one live or fallback run renders fully.
+/goal Add optional live Tavily-backed evidence collection to the existing Preflight demo without breaking demo mode. First read AGENTS.md and use Tavily skills when available. Use TAVILY_API_KEY server-side, falling back to TAVILY_API if present, return structured evidence items matching the existing types, keep seeded fallback active when credentials or network are unavailable, and verify one live or fallback evidence run renders fully.
 ```
 
 Then:

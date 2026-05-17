@@ -8,7 +8,7 @@ Build **Preflight**, a demo-ready AI Venture Preflight product for Ralphthon Imp
 
 The app must let a judge enter a startup idea and watch an AI venture studio produce a company blueprint: verdict, evidence, ICP, MVP, business model, GTM plan, risks, quality gates, red-team critique, and founder artifacts.
 
-The priority is a working, polished demo. Do not spend the first hour building infrastructure that is invisible in the demo.
+The priority is a working, polished demo. Do not spend the first hour building infrastructure that is invisible in the demo. Implementation runs through Codex Goals using the user's ChatGPT Pro subscription, not app-side OpenAI API usage.
 
 ## Read These First
 
@@ -52,12 +52,13 @@ Follow the trigger matrix in `AGENTS.md`. At minimum:
 - Use Browser first, then Playwright or webapp-testing fallback, for visual verification.
 - Use `superpowers:systematic-debugging` when commands, rendering, or runtime behavior fail.
 - Use `superpowers:verification-before-completion` before marking the Goal complete.
-- Use OpenAI Developers skills only for optional live server-side generation after demo mode works.
+- Do not require `OPENAI_API_KEY` for the primary implementation; Codex Goals is the implementation engine.
 - Use Tavily skills only for optional live evidence after demo mode works.
+- Prefer `TAVILY_API_KEY`; support `TAVILY_API` as a fallback alias if that is the provided local env var.
 - Use Vercel only after local build verification and only if already authenticated.
 - Commit and push GitHub checkpoints according to `AGENTS.md` when remote/auth are available.
 
-If a required optional integration is missing, keep demo mode working and log the missing integration in `IMPLEMENTATION_LOG.md`.
+If a required optional integration is missing, keep demo mode working and log the missing integration in `IMPLEMENTATION_LOG.md`. Do not block the first hour on OpenAI API credentials.
 
 ## Autonomous Operating Rules
 
@@ -71,6 +72,7 @@ If a required optional integration is missing, keep demo mode working and log th
 - If a command fails because of missing network, auth, or credentials, use the documented fallback and keep moving.
 - If the app cannot be built with Next.js, create the static fallback.
 - Do not declare completion until verification evidence exists.
+- Do not commit real secrets. Use `.env.example` for documented variables and `.env.local` for local credentials.
 
 ## One-Hour Execution Plan
 
@@ -618,21 +620,21 @@ Budget exhaustion is not completion. On budget limit, summarize:
 - What was verified.
 - What remains.
 
-## Optional Live Mode After Demo Works
+## Optional Live Evidence After Demo Works
 
-If time remains and `OPENAI_API_KEY` exists:
+If time remains and `TAVILY_API_KEY` or `TAVILY_API` exists:
 
-- Add server-side route for live generation.
-- Prompt the model to return JSON matching `PreflightRun`.
+- Add server-side or build-time Tavily evidence collection.
+- Return evidence items matching `EvidenceItem`.
 - Validate shape before rendering.
-- On any failure, fall back to seeded demo mode.
+- On any failure, fall back to seeded demo evidence.
 - Never expose API keys in client code.
 
 Optional env vars:
 
 ```text
-OPENAI_API_KEY=
 TAVILY_API_KEY=
+TAVILY_API=
 PREFLIGHT_MODE=demo
 ```
 
@@ -663,7 +665,7 @@ At the end of the autonomous run, write this to `IMPLEMENTATION_LOG.md`:
 The next best Goal should be one of:
 
 ```text
-/goal Add optional live server-side sprint generation to the existing Preflight demo without breaking demo mode. First read AGENTS.md and use OpenAI docs/platform-key skills when available. Use OPENAI_API_KEY only on the server, return structured JSON matching the existing types, keep seeded fallback active when credentials or network are unavailable, and verify one live or fallback run renders fully.
+/goal Add optional live Tavily-backed evidence collection to the existing Preflight demo without breaking demo mode. First read AGENTS.md and use Tavily skills when available. Use TAVILY_API_KEY server-side, falling back to TAVILY_API if present, return structured evidence items matching the existing types, keep seeded fallback active when credentials or network are unavailable, and verify one live or fallback evidence run renders fully.
 ```
 
 or:
