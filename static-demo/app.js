@@ -456,16 +456,40 @@ function resetAgents() {
   });
 }
 
+function startAgents() {
+  agents.forEach((agent) => {
+    agent.status = "starting";
+    agent.logs = [];
+  });
+}
+
 function renderActiveAgent() {
   const activeAgent = agents.find((agent) => agent.status === "running");
-  const title = activeAgent ? activeAgent.name : runStatus === "complete" ? "Sprint complete" : "Awaiting dispatch";
+  const starting = agents.filter((agent) => agent.status === "starting").length;
+  const title = activeAgent
+    ? activeAgent.name
+    : runStatus === "starting"
+      ? "Initializing workspace"
+      : runStatus === "complete"
+        ? "Sprint complete"
+        : "Awaiting dispatch";
   const detail = activeAgent
     ? activeAgent.summary
-    : runStatus === "complete"
-      ? "All specialist passes are complete. The blueprint and artifacts are unlocked."
-      : "Start the preflight to dispatch the venture studio agents.";
+    : runStatus === "starting"
+      ? `${starting || agents.length} specialist agents are starting. Preflight is preparing the workspace before the first active pass.`
+      : runStatus === "complete"
+        ? "All specialist passes are complete. The blueprint and artifacts are unlocked."
+        : "Start the preflight to dispatch the venture studio agents.";
 
   $("activeAgentCard").innerHTML = `<span>Current mission</span><strong>${title}</strong><p>${detail}</p>`;
+}
+
+function agentDescription(agent) {
+  if (agent.status === "starting") {
+    return "Starting agent workspace and loading role context.";
+  }
+
+  return agent.summary;
 }
 
 function renderAgents() {
@@ -475,33 +499,50 @@ function renderAgents() {
         <span class="status-dot dot-${agent.status}" aria-hidden="true"></span>
         <div>
           <div class="agent-title"><strong>${agent.name}</strong><span class="role-chip">${agent.status}</span></div>
-          <p>${agent.summary}</p>
+          <p>${agentDescription(agent)}</p>
         </div>
       </article>`
     )
     .join("");
 
   const completed = agents.filter((agent) => agent.status === "complete").length;
+  const starting = agents.filter((agent) => agent.status === "starting").length;
   const progress = Math.round((completed / agents.length) * 100);
-  $("progressLabel").textContent = `${progress}% complete`;
-  $("progressAgents").textContent = `${completed} of ${agents.length} agents finished`;
-  $("progressBar").style.width = `${progress}%`;
+  const displayProgress = runStatus === "starting" ? 12 : progress;
+  $("progressLabel").textContent = runStatus === "starting" ? "Initializing workspace" : `${progress}% complete`;
+  $("progressAgents").textContent =
+    runStatus === "starting"
+      ? `${starting || agents.length} agents provisioning. First active pass starts after setup.`
+      : `${completed} of ${agents.length} agents finished`;
+  $("progressBar").style.width = `${displayProgress}%`;
 }
 
 function renderLogs() {
   const rows = agents.flatMap((agent) => agent.logs.map((log) => `<li><span>${agent.name}</span>${log}</li>`));
-  $("logList").innerHTML = rows.length ? rows.slice(-6).join("") : "<li>No sprint logs yet. Start the preflight to dispatch agents.</li>";
+  $("logList").innerHTML = rows.length
+    ? rows.slice(-6).join("")
+    : runStatus === "starting"
+      ? "<li>Initializing workspace. Agents are provisioning in the background before the first sprint log lands.</li>"
+      : "<li>No sprint logs yet. Start the preflight to dispatch agents.</li>";
 }
 
 function renderStatus() {
   const pill = $("runStatus");
-  pill.textContent = runStatus;
+  const labels = {
+    idle: "Idle",
+    starting: "Starting",
+    running: "Running",
+    complete: "Complete",
+    failed: "Needs attention"
+  };
+  pill.textContent = labels[runStatus] || runStatus;
   pill.className = `status-pill status-${runStatus}`;
+  $("sprint").className = `panel sprint-panel sprint-panel-${runStatus}`;
   $("metricVerdict").textContent = runStatus === "complete" ? verdict.decision : "Locked";
   $("blueprintVerdictBadge").textContent = runStatus === "complete" ? verdict.decision : "Locked";
-  $("startButton").disabled = runStatus === "running" || !$("idea").value.trim();
-  $("completeButton").disabled = runStatus === "running";
-  $("resetButton").disabled = runStatus === "running";
+  $("startButton").disabled = runStatus === "running" || runStatus === "starting" || !$("idea").value.trim();
+  $("completeButton").disabled = runStatus === "running" || runStatus === "starting";
+  $("resetButton").disabled = runStatus === "running" || runStatus === "starting";
 }
 
 function renderBlueprint() {
@@ -714,9 +755,14 @@ function stepSprint() {
 function startSprint() {
   window.clearTimeout(timer);
   resetAgents();
-  runStatus = "running";
+  startAgents();
+  runStatus = "starting";
   currentStep = 0;
-  stepSprint();
+  renderAll();
+  timer = window.setTimeout(() => {
+    runStatus = "running";
+    stepSprint();
+  }, 520);
 }
 
 function resetDemo() {

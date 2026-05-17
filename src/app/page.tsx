@@ -9,7 +9,14 @@ import { QualityGatePanel } from "@/components/QualityGatePanel";
 import { RedTeamPanel } from "@/components/RedTeamPanel";
 import { SprintDashboard } from "@/components/SprintDashboard";
 import { demoBrief } from "@/data/demo-run";
-import { applySprintStep, createIdleRun, loadCompletedRun, prepareRunForSprint } from "@/lib/sprint";
+import {
+  applySprintStep,
+  createIdleRun,
+  loadCompletedRun,
+  markRunStartupFailed,
+  prepareRunForSprint,
+  prepareRunForStartup
+} from "@/lib/sprint";
 import type { PreflightRun, VentureBrief } from "@/types/preflight";
 
 interface RunResponse {
@@ -60,8 +67,20 @@ export default function Home() {
   const evidenceIds = useMemo(() => run.evidence.map((item) => item.id), [run.evidence]);
 
   async function startSprint() {
+    const startupStartedAt = performance.now();
+
+    async function holdStartupFrame() {
+      const remainingMs = Math.max(0, 450 - (performance.now() - startupStartedAt));
+
+      if (remainingMs > 0) {
+        await new Promise((resolve) => window.setTimeout(resolve, remainingMs));
+      }
+    }
+
     setIsGenerating(true);
-    setNotice("Asking the server to generate a venture preflight from this intake.");
+    setRun((currentRun) => prepareRunForStartup(currentRun));
+    setStep(0);
+    setNotice("Initializing workspace. Agents are starting while the server prepares the venture preflight.");
 
     try {
       const response = await fetch("/api/runs", {
@@ -75,16 +94,25 @@ export default function Home() {
       const payload = (await response.json()) as RunResponse;
 
       if (!response.ok) {
-        setNotice(payload.warning || "OpenAI generation did not finish. Retry Start Preflight or load the completed demo.");
+        const warning =
+          payload.warning || "OpenAI generation did not finish. Retry Start Preflight or load the completed demo.";
+        await holdStartupFrame();
+        setRun((currentRun) => markRunStartupFailed(currentRun, warning));
+        setNotice(warning);
         return;
       }
 
       if (!payload.run) {
-        setNotice(payload.warning || "The server did not return a run. Retry Start Preflight or load the completed demo.");
+        const warning =
+          payload.warning || "The server did not return a run. Retry Start Preflight or load the completed demo.";
+        await holdStartupFrame();
+        setRun((currentRun) => markRunStartupFailed(currentRun, warning));
+        setNotice(warning);
         return;
       }
 
       const nextRun = prepareRunForSprint(payload.run);
+      await holdStartupFrame();
       setRun(applySprintStep(nextRun, 0));
       setStep(1);
       setNotice(
@@ -94,11 +122,13 @@ export default function Home() {
             : "Demo fallback generated this run because live mode is unavailable.")
       );
     } catch (error) {
-      setNotice(
+      const warning =
         error instanceof Error
           ? `Live generation failed before a response was returned: ${error.message}. Retry Start Preflight or load the completed demo.`
-          : "Live generation failed before a response was returned. Retry Start Preflight or load the completed demo."
-      );
+          : "Live generation failed before a response was returned. Retry Start Preflight or load the completed demo.";
+      await holdStartupFrame();
+      setRun((currentRun) => markRunStartupFailed(currentRun, warning));
+      setNotice(warning);
     } finally {
       setIsGenerating(false);
     }

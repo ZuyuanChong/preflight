@@ -1,5 +1,105 @@
 # Implementation Log
 
+## 2026-05-17 Agent Startup UX Feedback
+
+### Skills And Tools Used
+
+- `superpowers:executing-plans` for inline execution against the project plan.
+- `build-web-apps:frontend-app-builder` for the startup-state UX improvement.
+- `build-web-apps:react-best-practices` after editing React/Next.js files.
+- `superpowers:systematic-debugging` after PowerShell blocked `npm.ps1` and local dev-server startup hit Windows environment issues.
+- `build-web-apps:frontend-testing-debugging` and `browser:browser` for rendered desktop/mobile verification through the in-app Browser runtime.
+
+### Issue
+
+While `Start Preflight` waited for `/api/runs`, the run still displayed as `idle` and the sprint panel showed `Awaiting dispatch`. During live OpenAI latency this made the agent studio look inactive even though startup work was happening in the background.
+
+Root cause: startup was only represented by `isGenerating` in the intake button. The shared run state and agent rows had no transitional provisioning state between `idle` and `running`.
+
+### Fix
+
+- Added `starting` to `RunStatus` and `AgentStatus`.
+- Added `prepareRunForStartup` and `markRunStartupFailed` in `src/lib/sprint.ts`.
+- Updated `Start Preflight` to immediately move the visible run into `starting`, hold that frame briefly for fast demo fallback responses, then transition into the normal sprint animation.
+- Added a real failed-startup state when `/api/runs` returns an error or no run.
+- Updated `SprintDashboard` with:
+  - `Starting` status pill.
+  - `Initializing workspace` progress state.
+  - Animated readiness/provisioning cues for workspace, agents, and run package.
+  - Per-agent `starting` rows and spinner dots.
+  - Startup-specific log placeholder and error copy.
+- Updated the static fallback with matching `starting` state, progress text, spinner dots, and subtle loading animation.
+
+### Verification
+
+Initial PowerShell commands failed because `npm.ps1` is blocked by execution policy:
+
+```powershell
+npm run typecheck
+npm run test:artifacts
+npm run test:scorecard
+```
+
+Rerun with `npm.cmd`:
+
+```powershell
+npm.cmd run typecheck
+npm.cmd run test:artifacts
+npm.cmd run test:scorecard
+npm.cmd run build
+```
+
+Results:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run test:artifacts` passed: 2/2 tests.
+- `npm.cmd run test:scorecard` passed: 3/3 tests.
+- `npm.cmd run build` passed. Next.js emitted nonfatal Webpack cache snapshot warnings after successful route generation.
+- Fresh pre-handoff rerun passed for `npm.cmd run typecheck`, `npm.cmd run build`, `npm.cmd run test:artifacts`, and `npm.cmd run test:scorecard`.
+
+Dev server notes:
+
+- `Start-Process` failed again with the local Windows `Path`/`PATH` environment collision.
+- A clean demo-only server was launched through the Node-backed browser runtime:
+
+```text
+node node_modules/next/dist/bin/next dev -p 3100
+PREFLIGHT_MODE=demo-only
+http://localhost:3100
+```
+
+Browser verification on `http://localhost:3100`:
+
+- Page identity: title `Preflight`, route `/`, no framework overlay.
+- Console health: no relevant errors or warnings.
+- First screen: Intake and `Start Preflight` visible.
+- Startup interaction: clicking `Start Preflight` showed `Starting`, `Initializing workspace`, 12% startup readiness, startup cues, per-agent `starting` rows, and provisioning log copy.
+- Completion: demo-only sprint completed to `Complete`, `100% complete`, Pivot verdict, sprint logs, evidence ledger, quality gates, red-team critique, and artifacts.
+- Artifact tabs: all seven tabs opened by ARIA tab role: Founder Memo, Market Brief, Product Requirements Document, Pitch Deck Outline, Unit Economics, GTM Plan, Red-Team Memo.
+- Evidence ledger still separates source and assumption rows.
+- Mobile 390x844 check: intake and primary controls visible, `scrollWidth` 375 vs `innerWidth` 390, no horizontal overflow.
+
+Known notes:
+
+- Existing servers on `localhost:3000` and `localhost:3001` were not reliable visual targets during this run: `3000` returned a 404 after reload, and `3001` rendered unstyled. Verification used the clean `3100` server from the current workspace.
+- The live-latency case was observed on an existing server: the sprint panel stayed in `Starting` while generation waited, showing background activity instead of `idle`.
+
+### GitHub Checkpoint
+
+Staging was attempted after verification:
+
+```powershell
+git -c safe.directory=C:/Users/zuyua/OneDrive/Desktop/digital-app/preflight add IMPLEMENTATION_LOG.md src/app/globals.css src/app/page.tsx src/components/IntakePanel.tsx src/components/SprintDashboard.tsx src/lib/sprint.ts src/types/preflight.ts static-demo/app.js static-demo/styles.css
+```
+
+Result:
+
+```text
+fatal: Unable to create 'C:/Users/zuyua/OneDrive/Desktop/digital-app/preflight/.git/index.lock': Permission denied
+```
+
+No commit or push was created. The latest useful state is present in the working tree.
+
 ## 2026-05-17 API Route Merge Conflict Fix
 
 ### Issue

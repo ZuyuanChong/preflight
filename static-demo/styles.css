@@ -426,9 +426,12 @@ button:disabled {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--accent), #36aaa3);
+  transition: width 240ms ease;
 }
 
 .active-agent-card {
+  position: relative;
+  overflow: hidden;
   display: grid;
   gap: 5px;
   border: 1px solid rgba(20, 124, 120, 0.28);
@@ -448,6 +451,31 @@ button:disabled {
 .active-agent-card p {
   margin-bottom: 0;
   font-size: 13px;
+}
+
+.sprint-panel-starting .progress-track span {
+  animation: readiness-pulse 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--accent), #73c8c2, var(--accent));
+  background-size: 180% 100%;
+}
+
+.sprint-panel-starting .active-agent-card {
+  border-color: rgba(20, 124, 120, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(20, 124, 120, 0.08);
+}
+
+.sprint-panel-starting .active-agent-card::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  animation: startup-sheen 2.2s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.58), transparent);
+  content: "";
+}
+
+.active-agent-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .agent-list {
@@ -474,6 +502,11 @@ button:disabled {
   background: linear-gradient(135deg, #fff8ea, #fff);
   box-shadow: 0 10px 24px rgba(173, 106, 0, 0.08);
   transform: translateY(-1px);
+}
+
+.agent-row-starting {
+  border-color: rgba(20, 124, 120, 0.26);
+  background: linear-gradient(135deg, #effafa, #fff);
 }
 
 .agent-row-complete {
@@ -511,6 +544,13 @@ button:disabled {
   background: #bac7cc;
 }
 
+.dot-starting {
+  border: 2px solid rgba(20, 124, 120, 0.22);
+  border-top-color: var(--accent);
+  background: transparent;
+  animation: startup-spin 900ms linear infinite;
+}
+
 .dot-running {
   background: var(--warn);
   box-shadow: 0 0 0 4px var(--warn-soft);
@@ -537,6 +577,12 @@ button:disabled {
   padding: 8px 10px;
 }
 
+.status-starting {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  padding: 8px 10px;
+}
+
 .status-running {
   background: var(--warn-soft);
   color: var(--warn);
@@ -546,6 +592,12 @@ button:disabled {
 .status-complete {
   background: var(--pass-soft);
   color: var(--pass);
+  padding: 8px 10px;
+}
+
+.status-failed {
+  background: var(--fail-soft);
+  color: var(--fail);
   padding: 8px 10px;
 }
 
@@ -978,6 +1030,34 @@ button:disabled {
   margin-left: 18px;
 }
 
+@keyframes startup-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes readiness-pulse {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes startup-sheen {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  45%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @media (max-width: 980px) {
   .workspace-grid,
   .content-grid,
@@ -987,6 +1067,14 @@ button:disabled {
 
   .summary-panel {
     order: initial;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-starting,
+  .sprint-panel-starting .active-agent-card::after,
+  .sprint-panel-starting .progress-track span {
+    animation: none;
   }
 }
 

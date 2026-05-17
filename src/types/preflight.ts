@@ -1,8 +1,8 @@
 export type VerdictDecision = "Proceed" | "Pivot" | "Pause" | "Kill";
-export type AgentStatus = "queued" | "running" | "blocked" | "complete" | "failed";
+export type AgentStatus = "queued" | "starting" | "running" | "blocked" | "complete" | "failed";
 export type EvidenceKind = "source" | "assumption";
 export type QualitySeverity = "pass" | "warn" | "fail";
-export type RunStatus = "idle" | "running" | "complete" | "failed";
+export type RunStatus = "idle" | "starting" | "running" | "complete" | "failed";
 export type ArtifactDepth = "executive" | "detailed";
 
 export interface VentureBrief {

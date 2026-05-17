@@ -436,9 +436,12 @@ button:disabled {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--accent), #36aaa3);
+  transition: width 240ms ease;
 }
 
 .active-agent-card {
+  position: relative;
+  overflow: hidden;
   display: grid;
   gap: 5px;
   border: 1px solid rgba(20, 124, 120, 0.28);
@@ -458,6 +461,76 @@ button:disabled {
 .active-agent-card p {
   margin-bottom: 0;
   font-size: 13px;
+}
+
+.sprint-panel-starting .progress-track span {
+  animation: readiness-pulse 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--accent), #73c8c2, var(--accent));
+  background-size: 180% 100%;
+}
+
+.sprint-panel-starting .active-agent-card {
+  border-color: rgba(20, 124, 120, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(20, 124, 120, 0.08);
+}
+
+.sprint-panel-starting .active-agent-card::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  animation: startup-sheen 2.2s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.58), transparent);
+  content: "";
+}
+
+.active-agent-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.startup-cues {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 13px;
+}
+
+.startup-cue {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  border: 1px solid rgba(20, 124, 120, 0.2);
+  border-radius: 8px;
+  background: #fbfefd;
+  padding: 10px;
+}
+
+.startup-cue span {
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dbe9e8;
+}
+
+.startup-cue span::after {
+  display: block;
+  width: 44%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  animation: startup-bar 1.4s ease-in-out infinite;
+  content: "";
+}
+
+.startup-cue strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.startup-cue small {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .agent-list {
@@ -486,8 +559,19 @@ button:disabled {
   transform: translateY(-1px);
 }
 
+.agent-row-starting {
+  border-color: rgba(20, 124, 120, 0.26);
+  background: linear-gradient(135deg, #effafa, #fff);
+}
+
 .agent-row-complete {
   background: #fbfdfb;
+}
+
+.agent-row-blocked,
+.agent-row-failed {
+  border-color: rgba(185, 52, 52, 0.24);
+  background: #fffafa;
 }
 
 .agent-row p {
@@ -521,6 +605,13 @@ button:disabled {
   background: #bac7cc;
 }
 
+.dot-starting {
+  border: 2px solid rgba(20, 124, 120, 0.22);
+  border-top-color: var(--accent);
+  background: transparent;
+  animation: startup-spin 900ms linear infinite;
+}
+
 .dot-running {
   background: var(--warn);
   box-shadow: 0 0 0 4px var(--warn-soft);
@@ -547,6 +638,12 @@ button:disabled {
   padding: 8px 10px;
 }
 
+.status-starting {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+  padding: 8px 10px;
+}
+
 .status-running {
   background: var(--warn-soft);
   color: var(--warn);
@@ -556,6 +653,12 @@ button:disabled {
 .status-complete {
   background: var(--pass-soft);
   color: var(--pass);
+  padding: 8px 10px;
+}
+
+.status-failed {
+  background: var(--fail-soft);
+  color: var(--fail);
   padding: 8px 10px;
 }
 
@@ -997,6 +1100,44 @@ button:disabled {
   height: 5px;
 }
 
+@keyframes startup-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes readiness-pulse {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes startup-sheen {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  45%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes startup-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(230%);
+  }
+}
+
 @media (max-width: 980px) {
   .workspace-grid,
   .content-grid,
@@ -1050,6 +1191,7 @@ button:disabled {
   .blueprint-columns,
   .evidence-row,
   .journey-strip,
+  .startup-cues,
   .verdict-insights {
     grid-template-columns: 1fr;
   }
@@ -1075,5 +1217,14 @@ button:disabled {
   .summary-panel > p,
   .brief-stack p {
     max-width: 30ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot-starting,
+  .startup-cue span::after,
+  .sprint-panel-starting .active-agent-card::after,
+  .sprint-panel-starting .progress-track span {
+    animation: none;
   }
 }

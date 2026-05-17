@@ -94,7 +94,7 @@ export function IntakePanel({
           onClick={onStart}
           disabled={isRunning || isGenerating || !brief.idea.trim()}
         >
-          {isGenerating ? "Generating live run" : isRunning ? "Sprint running" : "Start Preflight"}
+          {isGenerating ? "Starting agents" : isRunning ? "Sprint running" : "Start Preflight"}
         </button>
         <button className="secondary-button" onClick={onLoadComplete} disabled={isRunning || isGenerating}>
           Load completed demo

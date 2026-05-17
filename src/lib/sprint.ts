@@ -51,6 +51,42 @@ export function prepareRunForSprint(run: PreflightRun): PreflightRun {
   };
 }
 
+export function prepareRunForStartup(run: PreflightRun): PreflightRun {
+  const now = new Date().toISOString();
+
+  return {
+    ...run,
+    status: "starting",
+    agents: run.agents.map((agent) => ({
+      ...agent,
+      status: "starting",
+      startedAt: now,
+      completedAt: undefined,
+      logs: []
+    }))
+  };
+}
+
+export function markRunStartupFailed(run: PreflightRun, message: string): PreflightRun {
+  const now = new Date().toISOString();
+
+  return {
+    ...run,
+    status: "failed",
+    agents: run.agents.map((agent, index) => ({
+      ...agent,
+      status: index === 0 ? "failed" : "blocked",
+      startedAt: index === 0 ? agent.startedAt ?? now : undefined,
+      completedAt: index === 0 ? now : undefined,
+      logs: index === 0 ? [message] : [],
+      summary:
+        index === 0
+          ? "Startup failed before the venture studio could dispatch. Retry or load the completed demo."
+          : "Waiting for a successful startup before this specialist can run."
+    }))
+  };
+}
+
 export function applySprintStep(run: PreflightRun, step: number): PreflightRun {
   const now = new Date().toISOString();
   const agents = run.agents.map<AgentRun>((agent, index) => {
