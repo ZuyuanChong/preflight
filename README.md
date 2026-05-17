@@ -91,7 +91,7 @@ Codex must automatically use the capability matrix in [AGENTS.md](./AGENTS.md). 
 - Use Superpowers execution skills for task execution and verification discipline.
 - Use Build Web Apps skills for frontend implementation and UI debugging.
 - Use Browser first, then Playwright or webapp-testing fallback, for local visual verification.
-- Use Codex Goals through the user's ChatGPT Pro subscription for implementation. Do not require `OPENAI_API_KEY` for the primary build.
+- Use Codex Goals through the user's ChatGPT Pro subscription for implementation. The first verified build works without `OPENAI_API_KEY`; the current Next.js app can also use a server-side OpenAI key for dynamic runs.
 - Use Tavily skills only after demo mode works and only for real web evidence.
 - Use Vercel only after local build verification and only if authentication is already available.
 - Commit and push useful checkpoints to GitHub autonomously when the rules in `AGENTS.md` say to do so.
@@ -230,16 +230,27 @@ Strongest wedge: A founder can see what would have to be true before investing a
 
 ## Environment Variables
 
-Demo mode must work without any keys. The primary autonomous implementation uses Codex Goals through ChatGPT Pro, not app-side OpenAI API usage.
+Demo mode still works without any keys. Dynamic Preflight runs use the OpenAI API from the Next.js server route, so the key belongs in `.env.local` and is never sent to browser code.
 
 ```text
+OPENAI_API_KEY=
+OPENAI_MODEL=
+PREFLIGHT_OPENAI_TIMEOUT_MS=120000
 TAVILY_API_KEY=
 TAVILY_API=
-PREFLIGHT_MODE=demo
+PREFLIGHT_MODE=auto
 ```
 
 Rules:
 
+- Put your real OpenAI key in `.env.local` as `OPENAI_API_KEY=...`.
+- Do not paste API keys into React components, static-demo files, browser local storage, or committed docs.
+- `OPENAI_MODEL` is optional. If omitted, the server tries `gpt-5.4-mini`, then `gpt-4o-mini`.
+- `PREFLIGHT_OPENAI_TIMEOUT_MS` is optional. The default is `120000` and values are clamped between `30000` and `180000`.
+- `PREFLIGHT_MODE=auto` uses OpenAI when `OPENAI_API_KEY` is available and falls back to demo mode when it is not.
+- Use `PREFLIGHT_MODE=demo-only` only when you want to force seeded fallback output.
+- Live OpenAI failures no longer auto-render completed demo output. Use `Start preflight` to retry or `Load completed demo` when you intentionally want the fallback.
+- OpenAI-generated evidence is treated as assumptions unless a verified evidence provider is connected. This avoids presenting model text as sourced research.
 - Prefer `TAVILY_API_KEY`; support `TAVILY_API` as a fallback alias because the local credential may be named that way.
 - Use Tavily only from server-side code or build-time scripts, never in browser/client code.
 - Treat missing Tavily keys as expected, not fatal.

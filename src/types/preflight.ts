@@ -100,5 +100,6 @@ export interface PreflightRun {
   qualityIssues: QualityIssue[];
   scorecard: VentureScorecard;
   finalVerdict: FinalVerdict;
+  redTeamObjections: string[];
   artifacts: Artifact[];
 }

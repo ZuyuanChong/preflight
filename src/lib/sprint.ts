@@ -37,6 +37,20 @@ export function createRunFromBrief(brief: VentureBrief): PreflightRun {
   };
 }
 
+export function prepareRunForSprint(run: PreflightRun): PreflightRun {
+  return {
+    ...run,
+    status: "idle",
+    agents: run.agents.map((agent) => ({
+      ...agent,
+      status: "queued",
+      startedAt: undefined,
+      completedAt: undefined,
+      logs: []
+    }))
+  };
+}
+
 export function applySprintStep(run: PreflightRun, step: number): PreflightRun {
   const now = new Date().toISOString();
   const agents = run.agents.map<AgentRun>((agent, index) => {

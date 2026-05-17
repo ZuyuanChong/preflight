@@ -1,13 +1,15 @@
 import type { PreflightRun } from "@/types/preflight";
 
 export function RedTeamPanel({ run }: { run: PreflightRun }) {
-  const objections = [
-    "Founders may want momentum and affirmation more than a blunt critique.",
-    "General AI research tools can imitate the workflow unless Preflight owns the quality-gated decision layer.",
-    "The willingness-to-pay story is unproven until founders pay for a report before they build.",
-    "Evidence trust breaks if assumptions and sourced claims are mixed together.",
-    "A Pivot verdict must feel useful enough that the founder still wants the artifact package."
-  ];
+  const objections = run.redTeamObjections.length
+    ? run.redTeamObjections
+    : [
+        "Founders may want momentum and affirmation more than a blunt critique.",
+        "General AI research tools can imitate the workflow unless Preflight owns the quality-gated decision layer.",
+        "The willingness-to-pay story is unproven until founders pay for a report before they build.",
+        "Evidence trust breaks if assumptions and sourced claims are mixed together.",
+        "A Pivot verdict must feel useful enough that the founder still wants the artifact package."
+      ];
 
   return (
     <section className="panel red-team-panel" aria-labelledby="red-team-heading">

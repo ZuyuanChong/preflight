@@ -282,6 +282,7 @@ button:disabled {
 }
 
 .assumption-strip,
+.notice-strip,
 .wedge-callout,
 .locked-state {
   border: 1px solid var(--line);
@@ -293,6 +294,13 @@ button:disabled {
 .assumption-strip {
   display: grid;
   gap: 5px;
+  margin-top: 14px;
+}
+
+.notice-strip {
+  color: #30404a;
+  font-size: 13px;
+  line-height: 1.45;
   margin-top: 14px;
 }
 

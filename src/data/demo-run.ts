@@ -167,6 +167,14 @@ export const demoScorecard: VentureScorecard = {
   redTeamSeverity: 81
 };
 
+export const demoRedTeamObjections = [
+  "Founders may want momentum and affirmation more than a blunt critique.",
+  "General AI research tools can imitate the workflow unless Preflight owns the quality-gated decision layer.",
+  "The willingness-to-pay story is unproven until founders pay for a report before they build.",
+  "Evidence trust breaks if assumptions and sourced claims are mixed together.",
+  "A Pivot verdict must feel useful enough that the founder still wants the artifact package."
+];
+
 export const demoRun: PreflightRun = {
   id: "demo-preflight-001",
   mode: "demo",
@@ -177,5 +185,6 @@ export const demoRun: PreflightRun = {
   qualityIssues: demoQualityIssues,
   scorecard: demoScorecard,
   finalVerdict: demoVerdict,
+  redTeamObjections: demoRedTeamObjections,
   artifacts: buildArtifacts(demoBrief, demoVerdict)
 };

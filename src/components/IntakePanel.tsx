@@ -5,13 +5,28 @@ import type { VentureBrief } from "@/types/preflight";
 interface IntakePanelProps {
   brief: VentureBrief;
   isRunning: boolean;
+  isGenerating: boolean;
+  isPreparing: boolean;
+  modeLabel: string;
+  notice?: string;
   onBriefChange: (brief: VentureBrief) => void;
   onStart: () => void;
   onLoadComplete: () => void;
   onReset: () => void;
 }
 
-export function IntakePanel({ brief, isRunning, onBriefChange, onStart, onLoadComplete, onReset }: IntakePanelProps) {
+export function IntakePanel({
+  brief,
+  isRunning,
+  isGenerating,
+  isPreparing,
+  modeLabel,
+  notice,
+  onBriefChange,
+  onStart,
+  onLoadComplete,
+  onReset
+}: IntakePanelProps) {
   function updateField(field: keyof VentureBrief, value: string) {
     onBriefChange({
       ...brief,
@@ -22,7 +37,7 @@ export function IntakePanel({ brief, isRunning, onBriefChange, onStart, onLoadCo
           : brief.problem,
       solution:
         field === "idea"
-          ? "Run a deterministic AI venture preflight that returns evidence, gates, critique, and artifacts."
+          ? "Run an AI venture preflight that returns evidence, gates, critique, and artifacts."
           : brief.solution
     });
   }
@@ -34,7 +49,7 @@ export function IntakePanel({ brief, isRunning, onBriefChange, onStart, onLoadCo
           <p className="section-label">Preflight console</p>
           <h1 id="intake-heading">Intake</h1>
         </div>
-        <span className="mode-chip">Demo mode</span>
+        <span className="mode-chip">{modeLabel}</span>
       </div>
 
       <label>
@@ -76,16 +91,26 @@ export function IntakePanel({ brief, isRunning, onBriefChange, onStart, onLoadCo
       </div>
 
       <div className="button-row">
-        <button className="primary-button" onClick={onStart} disabled={isRunning || !brief.idea.trim()}>
-          {isRunning ? "Sprint running" : "Start preflight"}
+        <button
+          className="primary-button"
+          onClick={onStart}
+          disabled={isPreparing || isRunning || isGenerating || !brief.idea.trim()}
+        >
+          {isPreparing ? "Preparing backend" : isGenerating ? "Generating live run" : isRunning ? "Sprint running" : "Start preflight"}
         </button>
-        <button className="secondary-button" onClick={onLoadComplete} disabled={isRunning}>
+        <button className="secondary-button" onClick={onLoadComplete} disabled={isRunning || isGenerating}>
           Load completed demo
         </button>
-        <button className="ghost-button" onClick={onReset} disabled={isRunning}>
+        <button className="ghost-button" onClick={onReset} disabled={isRunning || isGenerating}>
           Reset
         </button>
       </div>
+
+      {notice ? (
+        <div className="notice-strip" role="status">
+          {notice}
+        </div>
+      ) : null}
 
       <div className="assumption-strip">
         <strong>Brief framing</strong>

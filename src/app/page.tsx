@@ -9,13 +9,73 @@ import { QualityGatePanel } from "@/components/QualityGatePanel";
 import { RedTeamPanel } from "@/components/RedTeamPanel";
 import { SprintDashboard } from "@/components/SprintDashboard";
 import { demoBrief } from "@/data/demo-run";
-import { applySprintStep, createIdleRun, createRunFromBrief, loadCompletedRun } from "@/lib/sprint";
+import { applySprintStep, createIdleRun, loadCompletedRun, prepareRunForSprint } from "@/lib/sprint";
 import type { PreflightRun, VentureBrief } from "@/types/preflight";
+
+interface RunResponse {
+  mode: "demo" | "live" | "error";
+  run?: PreflightRun;
+  retryable?: boolean;
+  warning?: string;
+}
+
+const BACKEND_WARMUP_TIMEOUT_MS = 6000;
 
 export default function Home() {
   const [brief, setBrief] = useState<VentureBrief>(demoBrief);
   const [run, setRun] = useState<PreflightRun>(() => createIdleRun());
   const [step, setStep] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isPreparing, setIsPreparing] = useState(true);
+  const [notice, setNotice] = useState<string | undefined>(
+    "Preparing the backend route for the first live run."
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function warmRunsRoute() {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), BACKEND_WARMUP_TIMEOUT_MS);
+
+      try {
+        const response = await fetch("/api/runs", {
+          cache: "no-store",
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`Warmup returned HTTP ${response.status}.`);
+        }
+
+        if (!cancelled) {
+          setNotice("Start preflight uses server-side OpenAI when available. Load completed demo remains the explicit fallback.");
+        }
+      } catch (error) {
+        if (!cancelled) {
+          const isAbort = error instanceof DOMException && error.name === "AbortError";
+          setNotice(
+            isAbort
+              ? "Backend warmup is taking longer than expected. Start preflight is enabled and will retry the route."
+              : error instanceof Error
+              ? `Backend warmup did not finish cleanly: ${error.message}. Start preflight can still retry the route.`
+              : "Backend warmup did not finish cleanly. Start preflight can still retry the route."
+          );
+        }
+      } finally {
+        window.clearTimeout(timeout);
+        if (!cancelled) {
+          setIsPreparing(false);
+        }
+      }
+    }
+
+    warmRunsRoute();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (run.status !== "running") {
@@ -40,21 +100,62 @@ export default function Home() {
     [run.evidence, run.qualityIssues]
   );
 
-  function startSprint() {
-    const nextRun = createRunFromBrief(brief);
-    setRun(applySprintStep(nextRun, 0));
-    setStep(1);
+  async function startSprint() {
+    setIsGenerating(true);
+    setNotice("Asking the server to generate a venture preflight from this intake.");
+
+    try {
+      const response = await fetch("/api/runs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ brief })
+      });
+
+      const payload = (await response.json()) as RunResponse;
+
+      if (!response.ok) {
+        setNotice(payload.warning || "OpenAI generation did not finish. Retry Start preflight or load the completed demo.");
+        return;
+      }
+
+      if (!payload.run) {
+        setNotice(payload.warning || "The server did not return a run. Retry Start preflight or load the completed demo.");
+        return;
+      }
+
+      const nextRun = prepareRunForSprint(payload.run);
+      setRun(applySprintStep(nextRun, 0));
+      setStep(1);
+      setNotice(
+        payload.warning ||
+          (payload.mode === "live"
+            ? "OpenAI generated this run from the current intake. Sources without URLs remain labeled as assumptions."
+            : "Demo fallback generated this run because live mode is unavailable.")
+      );
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? `Live generation failed before a response was returned: ${error.message}. Retry Start preflight or load the completed demo.`
+          : "Live generation failed before a response was returned. Retry Start preflight or load the completed demo."
+      );
+    } finally {
+      setIsGenerating(false);
+    }
   }
 
   function resetDemo() {
     setBrief(demoBrief);
     setRun(createIdleRun());
     setStep(0);
+    setNotice("Demo reset. Start preflight will use OpenAI if the server can read OPENAI_API_KEY.");
   }
 
   function loadComplete() {
     setRun(loadCompletedRun(brief));
     setStep(0);
+    setNotice("Loaded deterministic completed demo. Use Start preflight for OpenAI-generated output.");
   }
 
   return (
@@ -76,6 +177,10 @@ export default function Home() {
         <IntakePanel
           brief={brief}
           isRunning={isRunning}
+          isGenerating={isGenerating}
+          isPreparing={isPreparing}
+          modeLabel={run.mode === "live" ? "OpenAI live" : "Demo fallback"}
+          notice={notice}
           onBriefChange={setBrief}
           onStart={startSprint}
           onLoadComplete={loadComplete}
@@ -90,8 +195,8 @@ export default function Home() {
             </div>
           </div>
           <p>
-            Run the idea through a deterministic venture studio sprint. Demo mode works locally with no API keys and keeps
-            sources separate from assumptions.
+            Run the idea through a venture studio sprint. When the server has an OpenAI key, the readout is generated
+            from the current intake; demo fallback still works with no keys.
           </p>
           <div className="metric-grid">
             <div>

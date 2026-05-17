@@ -1,8 +1,18 @@
 import type { Artifact, FinalVerdict, VentureBrief } from "@/types/preflight";
 
-export function buildArtifacts(brief: VentureBrief, verdict: FinalVerdict): Artifact[] {
+const defaultCitationIds = ["ev-ralphthon-impact", "ev-codex-goals"];
+
+export function buildArtifacts(brief: VentureBrief, verdict: FinalVerdict, citationIds = defaultCitationIds): Artifact[] {
   const subject = brief.idea || "the venture";
   const customer = brief.targetCustomer || "the target customer";
+  const geography = brief.geography || "the initial market";
+  const businessModel = brief.businessModel || "a pricing model still to be tested";
+  const assumptions = brief.assumptions.length
+    ? brief.assumptions
+    : ["The target customer has an urgent pain.", "The proposed solution can win against current substitutes."];
+  const unknowns = brief.unknowns.length
+    ? brief.unknowns
+    : ["Who pays first?", "Which acquisition channel proves repeatable?"];
 
   return [
     {
@@ -10,42 +20,50 @@ export function buildArtifacts(brief: VentureBrief, verdict: FinalVerdict): Arti
       type: "founder_memo",
       title: "Founder Memo",
       qualityStatus: "warn",
-      citationIds: ["ev-ralphthon-impact", "ev-codex-goals"],
+      citationIds: citationIds.slice(0, 2),
       markdown: `# Founder Memo
 
 ## Decision
-${verdict.decision} from a generic AI startup advisor toward AI Venture Preflight.
+${verdict.decision}: ${subject}
 
 ## Why
 ${verdict.rationale}
 
+## Strongest Wedge
+${verdict.strongestWedge}
+
 ## What Must Be True
-- ${customer} feel enough pain from wasted build weekends.
-- They trust a report that separates sources from assumptions.
-- Red-team critique increases decision confidence instead of reducing motivation.
+- ${assumptions[0]}
+- ${assumptions[1] ?? `${customer} can reach value quickly enough to justify switching.`}
+- ${assumptions[2] ?? "The first MVP can produce a clear buying or usage signal."}
 
 ## Immediate Move
-Use ${subject} as a sharp pre-build decision workflow, not a broad pitch generator.`
+Focus the next validation step on ${customer} in ${geography}, not on broad feature expansion.`
     },
     {
       id: "artifact-market-brief",
       type: "market_brief",
       title: "Market Brief",
       qualityStatus: "warn",
-      citationIds: ["ev-ralphthon-impact", "ev-codex-goals"],
+      citationIds: citationIds.slice(0, 3),
       markdown: `# Market Brief
 
 ## Market Thesis
-Solo founders already use AI tools for research and drafting, but the unmet need is a disciplined pre-build decision workflow.
+${customer} may have enough pain to consider ${subject}, but the market proof depends on whether the problem is urgent, budgeted, and currently handled by weak substitutes.
 
-## Evidence
-- Ralphthon Impact scoring rewards useful, polished AI-native products.
-- Codex Goals support evidence-checked autonomous build loops.
+## Geography
+${geography}
+
+## Business Model Hypothesis
+${businessModel}
+
+## Evidence Status
+Treat uncited claims as assumptions until live source collection or customer interviews validate them.
 
 ## Open Questions
-- Which founder segment pays first?
-- Are substitute research tools good enough for one-off validation?
-- Does critique improve conversion or scare users away?`
+- ${unknowns[0]}
+- ${unknowns[1] ?? "Which substitute is painful enough to displace?"}
+- ${unknowns[2] ?? "What proof would justify a Proceed verdict?"}`
     },
     {
       id: "artifact-prd",
@@ -56,61 +74,58 @@ Solo founders already use AI tools for research and drafting, but the unmet need
       markdown: `# Product Requirements Document
 
 ## MVP
-- Intake form
-- Live sprint dashboard
-- Evidence ledger
-- Quality gate panel
-- Final blueprint
-- Artifact tabs
+- Capture the core ${customer} workflow.
+- Solve one narrow pain before adding adjacent features.
+- Show the buyer exactly what changed, saved, or improved.
+- Track assumptions separately from sourced evidence.
+- Make the first success metric visible inside the product.
 
 ## Non-Goals
-- Authentication
-- Multi-run collaboration
-- PPTX export
-- Full web-search automation
+- Broad platform scope.
+- Enterprise admin surfaces.
+- Multi-segment positioning.
+- Revenue forecasts without proof.
 
 ## Demo Success
-A judge can enter an idea, run the sprint, and inspect verdict, evidence, gates, critique, and artifacts without API keys.`
+The founder can explain who the first buyer is, why the pain is urgent, what the MVP proves, and what would change the verdict.`
     },
     {
       id: "artifact-pitch-deck",
       type: "pitch_deck_outline",
       title: "Pitch Deck Outline",
       qualityStatus: "warn",
-      citationIds: ["ev-ralphthon-impact"],
+      citationIds: citationIds.slice(0, 2),
       markdown: `# Pitch Deck Outline
 
-1. Problem: Founders build before they know what must be true.
-2. User: Solo technical founder choosing a weekend MVP.
-3. Solution: AI Venture Preflight with evidence, critique, and artifacts.
-4. Workflow: Intake, agents, evidence, quality gates, verdict, artifacts.
-5. Trust: Sources and assumptions are separated.
-6. Wedge: Pre-build decision, not post-build pitch polish.
-7. Business Model: Freemium plus paid deep reports.
-8. Risks: Crowded AI research space and willingness to pay.
-9. Roadmap: Live evidence, interview generator, workspace history.
-10. Ask: Validate with founders and ship live evidence collection.`
+1. Problem: ${customer} face a painful workflow or decision gap.
+2. Current Substitute: What they use today and why it is not good enough.
+3. Solution: ${subject}.
+4. Wedge: ${verdict.strongestWedge}
+5. Buyer: The first narrow segment in ${geography}.
+6. Product: MVP scope and one measurable outcome.
+7. Business Model: ${businessModel}.
+8. Risks: ${verdict.risks[0] ?? "Evidence and willingness to pay remain unproven."}
+9. Validation: The next experiment that changes the verdict.
+10. Ask: Customer access, proof points, or distribution support.`
     },
     {
       id: "artifact-unit-economics",
       type: "unit_economics",
       title: "Unit Economics",
       qualityStatus: "fail",
-      citationIds: ["ev-assumption-founder-wtp"],
+      citationIds: citationIds.slice(0, 2),
       markdown: `# Unit Economics
 
 ## Assumptions
-- Free demo run uses seeded or lightweight model output.
-- Paid report uses deeper model calls and web evidence collection.
-- Main cost drivers are model tokens and search calls.
+- The buyer is reachable without expensive sales cycles.
+- The product can deliver enough repeat value to support ${businessModel}.
+- Service, support, model, data, and onboarding costs stay below gross margin targets.
 
 ## Pricing Hypothesis
-- Free: one demo preflight.
-- Paid: $19-49 for a deep-dive report.
-- Team: $99/month for saved runs and collaboration.
+${businessModel}
 
 ## Risk
-Pricing is unvalidated until founders show willingness to pay.`
+Pricing is unvalidated until ${customer} commit budget, time, or repeated usage.`
     },
     {
       id: "artifact-gtm",
@@ -121,36 +136,36 @@ Pricing is unvalidated until founders show willingness to pay.`
       markdown: `# GTM Plan
 
 ## First Segment
-Solo technical founders building weekend MVPs.
+${customer}
 
 ## Channels
-- Indie hacker communities
-- Hackathon builders
-- Founder Discords and Slack groups
-- Build-in-public posts
+- Existing communities or trade groups in ${geography}.
+- Direct outreach to buyers with the clearest pain trigger.
+- Partner channels already trusted by the buyer.
+- Founder-led demos tied to the current substitute workflow.
 
 ## First Experiment
-Offer 20 manual Preflight reports and measure whether founders change, pause, or sharpen their build plan.`
+Run 10-20 buyer conversations or concierge trials and measure whether the verdict should move from ${verdict.decision} to Proceed, Pivot, Pause, or Kill.`
     },
     {
       id: "artifact-red-team",
       type: "red_team_memo",
       title: "Red-Team Memo",
       qualityStatus: "warn",
-      citationIds: ["ev-assumption-founder-wtp"],
+      citationIds: citationIds.slice(0, 2),
       markdown: `# Red-Team Memo
 
 ## Strongest Objection
-Founders may want confidence and momentum more than honest critique.
+${verdict.risks[0] ?? `${customer} may not feel enough urgency to switch.`}
 
 ## Competitive Risk
-General AI research tools can imitate parts of the workflow unless Preflight owns the quality-gated decision layer.
+The strongest competitor may be the buyer's current manual process, spreadsheet, services vendor, or internal workaround.
 
 ## Evidence Risk
-The product loses trust if it presents assumptions as facts.
+The product loses trust if assumptions are presented as sourced market proof.
 
 ## Verdict Pressure
-The demo must prove that Pivot or Pause can feel valuable, not disappointing.`
+The next experiment must produce evidence strong enough to defend or change the ${verdict.decision} verdict.`
     }
   ];
 }
