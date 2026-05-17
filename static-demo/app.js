@@ -36,6 +36,13 @@ const scorecard = {
   "Red-team severity": 81
 };
 
+const scorecardGroups = [
+  ["Market signal", "Pain, timing, and competitive pressure", ["Pain", "Timing", "Competition pressure"]],
+  ["Customer clarity", "Buyer definition and reachable distribution", ["Buyer clarity", "Distribution"]],
+  ["Business risk", "Monetization risk against build feasibility", ["Monetization", "Feasibility"]],
+  ["Evidence quality", "Trust level and red-team pressure", ["Evidence quality", "Red-team severity"]]
+];
+
 const agents = [
   ["Managing Partner", "Orchestrates, synthesizes, and decides the final verdict.", "Keep the demo focused on pre-build decision quality rather than broad startup advice."],
   ["Framer", "Converts raw idea into structured venture brief and assumptions.", "The critical unknown is whether founders pay for confidence before they build."],
@@ -134,6 +141,7 @@ let runStatus = "idle";
 let currentStep = 0;
 let timer = null;
 let activeArtifact = 0;
+let evidenceFilter = "all";
 
 const $ = (id) => document.getElementById(id);
 
@@ -168,13 +176,25 @@ function resetAgents() {
   });
 }
 
+function renderActiveAgent() {
+  const activeAgent = agents.find((agent) => agent.status === "running");
+  const title = activeAgent ? activeAgent.name : runStatus === "complete" ? "Sprint complete" : "Awaiting dispatch";
+  const detail = activeAgent
+    ? activeAgent.summary
+    : runStatus === "complete"
+      ? "All specialist passes are complete. The blueprint and artifacts are unlocked."
+      : "Start the preflight to dispatch the venture studio agents.";
+
+  $("activeAgentCard").innerHTML = `<span>Current mission</span><strong>${title}</strong><p>${detail}</p>`;
+}
+
 function renderAgents() {
   $("agentList").innerHTML = agents
     .map(
-      (agent) => `<article class="agent-row">
+      (agent) => `<article class="agent-row agent-row-${agent.status}">
         <span class="status-dot dot-${agent.status}" aria-hidden="true"></span>
         <div>
-          <div class="agent-title"><strong>${agent.name}</strong><span>${agent.status}</span></div>
+          <div class="agent-title"><strong>${agent.name}</strong><span class="role-chip">${agent.status}</span></div>
           <p>${agent.summary}</p>
         </div>
       </article>`
@@ -210,20 +230,41 @@ function renderBlueprint() {
   $("blueprintBody").hidden = !complete;
   if (!complete) return;
 
-  const scoreRows = Object.entries(scorecard)
+  const scoreGroups = scorecardGroups
     .map(
-      ([label, value]) => `<div class="score-row">
-        <span>${label}</span>
-        <div class="score-bar"><span style="width:${value}%"></span></div>
-        <strong>${value}</strong>
-      </div>`
+      ([title, signal, keys]) => `<article class="score-group">
+        <div class="score-group-heading"><strong>${title}</strong><span>${signal}</span></div>
+        <div class="score-grid">${keys
+          .map(
+            (label) => `<div class="score-row">
+              <span>${label}</span>
+              <div class="score-bar"><span style="width:${scorecard[label]}%"></span></div>
+              <strong>${scorecard[label]}</strong>
+            </div>`
+          )
+          .join("")}</div>
+      </article>`
     )
     .join("");
 
   $("blueprintBody").innerHTML = `
-    <p class="verdict-copy">${verdict.rationale}</p>
+    <div class="verdict-hero">
+      <span>Verdict</span>
+      <strong>${verdict.decision}</strong>
+      <p>${verdict.rationale}</p>
+    </div>
+    <div class="verdict-insights">
+      <div><span>Why not Proceed yet</span><strong>Evidence and willingness-to-pay still need live proof.</strong></div>
+      <div><span>Next best action</span><strong>${verdict.nextActions[0]}</strong></div>
+    </div>
     <div class="wedge-callout"><span>Strongest wedge</span><strong>${verdict.strongestWedge}</strong></div>
-    <div class="score-grid">${scoreRows}</div>
+    <div class="scorecard-section" aria-labelledby="scorecard-title">
+      <div class="scorecard-heading">
+        <h3 id="scorecard-title">Venture scorecard</h3>
+        <span>0-100 confidence read</span>
+      </div>
+      <div class="score-group-grid">${scoreGroups}</div>
+    </div>
     <div class="blueprint-columns">
       <div><h3>Next actions</h3><ul>${verdict.nextActions.map((item) => `<li>${item}</li>`).join("")}</ul></div>
       <div><h3>Risks</h3><ul>${verdict.risks.map((item) => `<li>${item}</li>`).join("")}</ul></div>
@@ -231,7 +272,26 @@ function renderBlueprint() {
 }
 
 function renderEvidence() {
-  $("evidenceTable").innerHTML = evidence
+  const sourceCount = evidence.filter((item) => item.kind === "source").length;
+  const assumptionCount = evidence.filter((item) => item.kind === "assumption").length;
+  const needsValidationCount = evidence.filter((item) => !item.url).length;
+  const filters = [
+    ["all", `All ${evidence.length}`],
+    ["source", `Sources ${sourceCount}`],
+    ["assumption", `Assumptions ${assumptionCount}`],
+    ["needs-validation", `Needs validation ${needsValidationCount}`]
+  ];
+  const filteredEvidence = evidence.filter((item) => {
+    if (evidenceFilter === "all") return true;
+    if (evidenceFilter === "needs-validation") return !item.url;
+    return item.kind === evidenceFilter;
+  });
+
+  $("evidenceFilters").innerHTML = filters
+    .map(([id, label]) => `<button class="${evidenceFilter === id ? "active" : ""}" data-evidence-filter="${id}">${label}</button>`)
+    .join("");
+
+  $("evidenceTable").innerHTML = filteredEvidence
     .map(
       (item) => `<article class="evidence-row">
         <div>
@@ -247,13 +307,28 @@ function renderEvidence() {
       </article>`
     )
     .join("");
+
+  document.querySelectorAll("[data-evidence-filter]").forEach((button) => {
+    button.addEventListener("click", () => {
+      evidenceFilter = button.getAttribute("data-evidence-filter");
+      renderEvidence();
+    });
+  });
 }
 
 function renderIssues() {
+  const failCount = issues.filter(([severity]) => severity === "fail").length;
+  const warnCount = issues.filter(([severity]) => severity === "warn").length;
+  $("qualitySummary").textContent = `${failCount} fail / ${warnCount} warn`;
+  $("qualityBlocker").innerHTML = `<span>Trust layer</span><strong>${
+    failCount > 0 ? "Blocks Proceed until proof improves" : "Proceed allowed by current checks"
+  }</strong><p>Preflight marks weak claims before they become founder decisions.</p>`;
+
   $("issueList").innerHTML = issues
     .map(
       ([severity, type, message, fix]) => `<article class="issue-card severity-${severity}">
         <div><span>${type}</span><strong>${message}</strong></div>
+        <em>${severity === "fail" ? "Blocks Proceed" : "Review before claim"}</em>
         <p>${fix}</p>
       </article>`
     )
@@ -300,6 +375,7 @@ function renderArtifacts() {
 function renderAll() {
   updateSummary();
   renderStatus();
+  renderActiveAgent();
   renderAgents();
   renderLogs();
   renderBlueprint();

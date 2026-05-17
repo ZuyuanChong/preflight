@@ -36,6 +36,7 @@ export function ArtifactTabs({ artifacts }: { artifacts: Artifact[] }) {
           <h2 id="artifacts-heading">Aligned outputs</h2>
         </div>
       </div>
+      <p className="artifact-subtitle">Every artifact is generated from the same verdict, evidence ledger, and quality gates.</p>
 
       <div className="tabs" role="tablist" aria-label="Artifact tabs">
         {artifacts.map((artifact) => (

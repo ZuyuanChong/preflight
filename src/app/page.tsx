@@ -12,6 +12,13 @@ import { demoBrief } from "@/data/demo-run";
 import { applySprintStep, createIdleRun, createRunFromBrief, loadCompletedRun } from "@/lib/sprint";
 import type { PreflightRun, VentureBrief } from "@/types/preflight";
 
+const journeySteps = [
+  ["01", "Intake", "Founder brief"],
+  ["02", "Agent Sprint", "Specialist pass"],
+  ["03", "Quality Gates", "Trust checks"],
+  ["04", "Founder Blueprint", "Decision packet"]
+];
+
 export default function Home() {
   const [brief, setBrief] = useState<VentureBrief>(demoBrief);
   const [run, setRun] = useState<PreflightRun>(() => createIdleRun());
@@ -72,6 +79,16 @@ export default function Home() {
         </nav>
       </header>
 
+      <section className="journey-strip" aria-label="Preflight journey">
+        {journeySteps.map(([number, title, caption]) => (
+          <article key={title}>
+            <span>{number}</span>
+            <strong>{title}</strong>
+            <small>{caption}</small>
+          </article>
+        ))}
+      </section>
+
       <section className="workspace-grid" aria-label="Preflight workspace">
         <IntakePanel
           brief={brief}
@@ -85,13 +102,14 @@ export default function Home() {
         <section className="panel summary-panel" aria-label="Preflight summary">
           <div className="panel-heading">
             <div>
-              <p className="section-label">Decision system</p>
+              <p className="section-label">Decision preview</p>
               <h2>Pre-build readout</h2>
             </div>
+            <span className="preview-chip">Command center</span>
           </div>
           <p>
-            Run the idea through a deterministic venture studio sprint. Demo mode works locally with no API keys and keeps
-            sources separate from assumptions.
+            Run the idea through a venture studio sprint, then inspect the verdict, evidence, trust checks, and founder
+            packet from one aligned blueprint.
           </p>
           <div className="metric-grid">
             <div>
