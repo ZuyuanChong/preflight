@@ -6,7 +6,6 @@ interface IntakePanelProps {
   brief: VentureBrief;
   isRunning: boolean;
   isGenerating: boolean;
-  isPreparing: boolean;
   modeLabel: string;
   notice?: string;
   onBriefChange: (brief: VentureBrief) => void;
@@ -19,7 +18,6 @@ export function IntakePanel({
   brief,
   isRunning,
   isGenerating,
-  isPreparing,
   modeLabel,
   notice,
   onBriefChange,
@@ -94,9 +92,9 @@ export function IntakePanel({
         <button
           className="primary-button"
           onClick={onStart}
-          disabled={isPreparing || isRunning || isGenerating || !brief.idea.trim()}
+          disabled={isRunning || isGenerating || !brief.idea.trim()}
         >
-          {isPreparing ? "Preparing backend" : isGenerating ? "Generating live run" : isRunning ? "Sprint running" : "Start preflight"}
+          {isGenerating ? "Generating live run" : isRunning ? "Sprint running" : "Start Preflight"}
         </button>
         <button className="secondary-button" onClick={onLoadComplete} disabled={isRunning || isGenerating}>
           Load completed demo

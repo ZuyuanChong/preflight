@@ -19,63 +19,21 @@ interface RunResponse {
   warning?: string;
 }
 
-const BACKEND_WARMUP_TIMEOUT_MS = 6000;
+const journeySteps = [
+  ["01", "Intake", "Founder brief"],
+  ["02", "Agent Sprint", "Specialist pass"],
+  ["03", "Quality Gates", "Trust checks"],
+  ["04", "Founder Blueprint", "Decision packet"]
+];
 
 export default function Home() {
   const [brief, setBrief] = useState<VentureBrief>(demoBrief);
   const [run, setRun] = useState<PreflightRun>(() => createIdleRun());
   const [step, setStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isPreparing, setIsPreparing] = useState(true);
   const [notice, setNotice] = useState<string | undefined>(
-    "Preparing the backend route for the first live run."
+    "Start Preflight requests the server when clicked. Load completed demo remains the explicit fallback."
   );
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function warmRunsRoute() {
-      const controller = new AbortController();
-      const timeout = window.setTimeout(() => controller.abort(), BACKEND_WARMUP_TIMEOUT_MS);
-
-      try {
-        const response = await fetch("/api/runs", {
-          cache: "no-store",
-          signal: controller.signal
-        });
-
-        if (!response.ok) {
-          throw new Error(`Warmup returned HTTP ${response.status}.`);
-        }
-
-        if (!cancelled) {
-          setNotice("Start preflight uses server-side OpenAI when available. Load completed demo remains the explicit fallback.");
-        }
-      } catch (error) {
-        if (!cancelled) {
-          const isAbort = error instanceof DOMException && error.name === "AbortError";
-          setNotice(
-            isAbort
-              ? "Backend warmup is taking longer than expected. Start preflight is enabled and will retry the route."
-              : error instanceof Error
-              ? `Backend warmup did not finish cleanly: ${error.message}. Start preflight can still retry the route.`
-              : "Backend warmup did not finish cleanly. Start preflight can still retry the route."
-          );
-        }
-      } finally {
-        window.clearTimeout(timeout);
-        if (!cancelled) {
-          setIsPreparing(false);
-        }
-      }
-    }
-
-    warmRunsRoute();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     if (run.status !== "running") {
@@ -116,12 +74,12 @@ export default function Home() {
       const payload = (await response.json()) as RunResponse;
 
       if (!response.ok) {
-        setNotice(payload.warning || "OpenAI generation did not finish. Retry Start preflight or load the completed demo.");
+        setNotice(payload.warning || "OpenAI generation did not finish. Retry Start Preflight or load the completed demo.");
         return;
       }
 
       if (!payload.run) {
-        setNotice(payload.warning || "The server did not return a run. Retry Start preflight or load the completed demo.");
+        setNotice(payload.warning || "The server did not return a run. Retry Start Preflight or load the completed demo.");
         return;
       }
 
@@ -137,8 +95,8 @@ export default function Home() {
     } catch (error) {
       setNotice(
         error instanceof Error
-          ? `Live generation failed before a response was returned: ${error.message}. Retry Start preflight or load the completed demo.`
-          : "Live generation failed before a response was returned. Retry Start preflight or load the completed demo."
+          ? `Live generation failed before a response was returned: ${error.message}. Retry Start Preflight or load the completed demo.`
+          : "Live generation failed before a response was returned. Retry Start Preflight or load the completed demo."
       );
     } finally {
       setIsGenerating(false);
@@ -149,13 +107,13 @@ export default function Home() {
     setBrief(demoBrief);
     setRun(createIdleRun());
     setStep(0);
-    setNotice("Demo reset. Start preflight will use OpenAI if the server can read OPENAI_API_KEY.");
+    setNotice("Demo reset. Start Preflight will use OpenAI if the server can read OPENAI_API_KEY.");
   }
 
   function loadComplete() {
     setRun(loadCompletedRun(brief));
     setStep(0);
-    setNotice("Loaded deterministic completed demo. Use Start preflight for OpenAI-generated output.");
+    setNotice("Loaded deterministic completed demo. Use Start Preflight for OpenAI-generated output.");
   }
 
   return (
@@ -173,12 +131,21 @@ export default function Home() {
         </nav>
       </header>
 
+      <section className="journey-strip" aria-label="Preflight journey">
+        {journeySteps.map(([number, title, caption]) => (
+          <article key={title}>
+            <span>{number}</span>
+            <strong>{title}</strong>
+            <small>{caption}</small>
+          </article>
+        ))}
+      </section>
+
       <section className="workspace-grid" aria-label="Preflight workspace">
         <IntakePanel
           brief={brief}
           isRunning={isRunning}
           isGenerating={isGenerating}
-          isPreparing={isPreparing}
           modeLabel={run.mode === "live" ? "OpenAI live" : "Demo fallback"}
           notice={notice}
           onBriefChange={setBrief}
@@ -190,13 +157,15 @@ export default function Home() {
         <section className="panel summary-panel" aria-label="Preflight summary">
           <div className="panel-heading">
             <div>
-              <p className="section-label">Decision system</p>
+              <p className="section-label">Decision preview</p>
               <h2>Pre-build readout</h2>
             </div>
+            <span className="preview-chip">Command center</span>
           </div>
           <p>
-            Run the idea through a venture studio sprint. When the server has an OpenAI key, the readout is generated
-            from the current intake; demo fallback still works with no keys.
+            Run the idea through a live venture studio sprint, then inspect the verdict, evidence, trust checks, and
+            founder packet from one aligned blueprint. Server-side OpenAI generates the readout when available; demo
+            fallback remains explicit.
           </p>
           <div className="metric-grid">
             <div>

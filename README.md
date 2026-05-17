@@ -249,7 +249,7 @@ Rules:
 - `PREFLIGHT_OPENAI_TIMEOUT_MS` is optional. The default is `120000` and values are clamped between `30000` and `180000`.
 - `PREFLIGHT_MODE=auto` uses OpenAI when `OPENAI_API_KEY` is available and falls back to demo mode when it is not.
 - Use `PREFLIGHT_MODE=demo-only` only when you want to force seeded fallback output.
-- Live OpenAI failures no longer auto-render completed demo output. Use `Start preflight` to retry or `Load completed demo` when you intentionally want the fallback.
+- Live OpenAI failures no longer auto-render completed demo output. Use `Start Preflight` to retry or `Load completed demo` when you intentionally want the fallback.
 - OpenAI-generated evidence is treated as assumptions unless a verified evidence provider is connected. This avoids presenting model text as sourced research.
 - Prefer `TAVILY_API_KEY`; support `TAVILY_API` as a fallback alias because the local credential may be named that way.
 - Use Tavily only from server-side code or build-time scripts, never in browser/client code.

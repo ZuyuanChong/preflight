@@ -77,8 +77,8 @@ export async function POST(request: Request) {
         mode: "error",
         retryable: true,
         warning: isTimeout
-          ? `${message} Retry Start preflight, or use Load completed demo if you need the fallback.`
-          : `OpenAI generation failed. ${message} Retry Start preflight, or use Load completed demo if you need the fallback.`
+          ? `${message} Retry Start Preflight, or use Load completed demo if you need the fallback.`
+          : `OpenAI generation failed. ${message} Retry Start Preflight, or use Load completed demo if you need the fallback.`
       },
       { status: isTimeout ? 504 : 502 }
     );

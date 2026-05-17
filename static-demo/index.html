@@ -21,6 +21,13 @@
         </nav>
       </header>
 
+      <section class="journey-strip" aria-label="Preflight journey">
+        <article><span>01</span><strong>Intake</strong><small>Founder brief</small></article>
+        <article><span>02</span><strong>Agent Sprint</strong><small>Specialist pass</small></article>
+        <article><span>03</span><strong>Quality Gates</strong><small>Trust checks</small></article>
+        <article><span>04</span><strong>Founder Blueprint</strong><small>Decision packet</small></article>
+      </section>
+
       <section class="workspace-grid">
         <section class="panel intake-panel" aria-labelledby="intake-title">
           <div class="panel-heading">
@@ -51,7 +58,7 @@
           </div>
 
           <div class="button-row">
-            <button class="primary-button" id="startButton">Start preflight</button>
+            <button class="primary-button" id="startButton">Start Preflight</button>
             <button class="secondary-button" id="completeButton">Load completed demo</button>
             <button class="ghost-button" id="resetButton">Reset</button>
           </div>
@@ -65,13 +72,14 @@
         <section class="panel summary-panel">
           <div class="panel-heading">
             <div>
-              <p class="section-label">Decision system</p>
+              <p class="section-label">Decision preview</p>
               <h2>Pre-build readout</h2>
             </div>
+            <span class="preview-chip">Command center</span>
           </div>
           <p>
-            Run the idea through a deterministic venture studio sprint. Demo mode works locally with no API keys and keeps
-            sources separate from assumptions.
+            Run the idea through a venture studio sprint, then inspect the verdict, evidence, trust checks, and founder
+            packet from one aligned blueprint.
           </p>
           <div class="metric-grid">
             <div><span>Verdict</span><strong id="metricVerdict">Locked</strong></div>
@@ -104,6 +112,7 @@
             </div>
             <div class="progress-track"><span id="progressBar"></span></div>
           </div>
+          <div class="active-agent-card" id="activeAgentCard"></div>
           <div class="agent-list" id="agentList"></div>
           <div class="log-panel">
             <strong>Sprint log</strong>
@@ -135,17 +144,19 @@
               <h2 id="evidence-title">Sources vs assumptions</h2>
             </div>
           </div>
+          <div class="filter-chips" id="evidenceFilters" aria-label="Evidence filters"></div>
           <div class="evidence-table" id="evidenceTable"></div>
         </section>
 
-        <section class="panel" id="quality" aria-labelledby="quality-title">
+        <section class="panel quality-panel" id="quality" aria-labelledby="quality-title">
           <div class="panel-heading">
             <div>
               <p class="section-label">Quality gates</p>
               <h2 id="quality-title">Trust checks</h2>
             </div>
-            <span class="quality-summary">3 fail / 4 warn</span>
+            <span class="quality-summary" id="qualitySummary">3 fail / 4 warn</span>
           </div>
+          <div class="trust-layer-callout" id="qualityBlocker"></div>
           <div class="issue-list" id="issueList"></div>
         </section>
       </section>
@@ -169,6 +180,7 @@
               <h2 id="artifacts-title">Aligned outputs</h2>
             </div>
           </div>
+          <p class="artifact-subtitle">Every artifact is generated from the same verdict, evidence ledger, and quality gates.</p>
           <div class="tabs" id="artifactTabs" role="tablist" aria-label="Artifact tabs"></div>
           <article class="artifact-preview">
             <div class="artifact-meta" id="artifactMeta"></div>
