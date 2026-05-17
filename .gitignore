@@ -8,6 +8,10 @@ out/
 # Build outputs
 dist/
 build/
+*.tsbuildinfo
+
+# Local verification artifacts
+.verification/
 
 # Local environment secrets
 .env

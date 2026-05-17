@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Preflight</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <strong>Preflight</strong>
+          <span>AI Venture Preflight</span>
+        </div>
+        <nav aria-label="Demo sections">
+          <a href="#sprint">Sprint</a>
+          <a href="#blueprint">Blueprint</a>
+          <a href="#evidence">Evidence</a>
+          <a href="#artifacts">Artifacts</a>
+        </nav>
+      </header>
+
+      <section class="workspace-grid">
+        <section class="panel intake-panel" aria-labelledby="intake-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Preflight console</p>
+              <h1 id="intake-title">Intake</h1>
+            </div>
+            <span class="mode-chip">Demo mode</span>
+          </div>
+
+          <label>
+            Startup idea
+            <textarea id="idea" rows="4"></textarea>
+          </label>
+          <label>
+            Target customer
+            <input id="customer" />
+          </label>
+          <div class="two-column-inputs">
+            <label>
+              Geography
+              <input id="geography" />
+            </label>
+            <label>
+              Business model
+              <input id="businessModel" />
+            </label>
+          </div>
+
+          <div class="button-row">
+            <button class="primary-button" id="startButton">Start preflight</button>
+            <button class="secondary-button" id="completeButton">Load completed demo</button>
+            <button class="ghost-button" id="resetButton">Reset</button>
+          </div>
+
+          <div class="assumption-strip">
+            <strong>Brief framing</strong>
+            <span id="briefFraming"></span>
+          </div>
+        </section>
+
+        <section class="panel summary-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Decision system</p>
+              <h2>Pre-build readout</h2>
+            </div>
+          </div>
+          <p>
+            Run the idea through a deterministic venture studio sprint. Demo mode works locally with no API keys and keeps
+            sources separate from assumptions.
+          </p>
+          <div class="metric-grid">
+            <div><span>Verdict</span><strong id="metricVerdict">Locked</strong></div>
+            <div><span>Sources</span><strong id="metricSources">2</strong></div>
+            <div><span>Assumptions</span><strong id="metricAssumptions">2</strong></div>
+            <div><span>Gate issues</span><strong id="metricIssues">7</strong></div>
+          </div>
+          <div class="brief-stack">
+            <strong>Current ICP</strong>
+            <p id="summaryCustomer"></p>
+            <strong>Business model hypothesis</strong>
+            <p id="summaryBusiness"></p>
+          </div>
+        </section>
+      </section>
+
+      <section class="content-grid">
+        <section class="panel sprint-panel" id="sprint" aria-labelledby="sprint-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Live sprint</p>
+              <h2 id="sprint-title">Agent studio</h2>
+            </div>
+            <span class="status-pill status-idle" id="runStatus">idle</span>
+          </div>
+          <div class="progress-row">
+            <div>
+              <strong id="progressLabel">0% complete</strong>
+              <span id="progressAgents">0 of 9 agents finished</span>
+            </div>
+            <div class="progress-track"><span id="progressBar"></span></div>
+          </div>
+          <div class="agent-list" id="agentList"></div>
+          <div class="log-panel">
+            <strong>Sprint log</strong>
+            <ul id="logList"></ul>
+          </div>
+        </section>
+
+        <section class="panel blueprint-panel" id="blueprint" aria-labelledby="blueprint-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Blueprint</p>
+              <h2 id="blueprint-title">Final verdict</h2>
+            </div>
+            <span class="verdict-badge" id="blueprintVerdictBadge">Locked</span>
+          </div>
+          <div id="lockedState" class="locked-state">
+            <strong>Verdict locked during sprint</strong>
+            <p>Preflight reveals the final verdict only after the specialist agents complete their pass.</p>
+          </div>
+          <div id="blueprintBody" hidden></div>
+        </section>
+      </section>
+
+      <section class="content-grid lower-grid">
+        <section class="panel" id="evidence" aria-labelledby="evidence-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Evidence ledger</p>
+              <h2 id="evidence-title">Sources vs assumptions</h2>
+            </div>
+          </div>
+          <div class="evidence-table" id="evidenceTable"></div>
+        </section>
+
+        <section class="panel" id="quality" aria-labelledby="quality-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Quality gates</p>
+              <h2 id="quality-title">Trust checks</h2>
+            </div>
+            <span class="quality-summary">3 fail / 4 warn</span>
+          </div>
+          <div class="issue-list" id="issueList"></div>
+        </section>
+      </section>
+
+      <section class="content-grid lower-grid">
+        <section class="panel red-team-panel" id="red-team" aria-labelledby="red-team-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Red team</p>
+              <h2 id="red-team-title">Pressure test</h2>
+            </div>
+          </div>
+          <p class="verdict-copy" id="redTeamIntro"></p>
+          <ol class="red-team-list" id="redTeamList"></ol>
+        </section>
+
+        <section class="panel artifacts-panel" id="artifacts" aria-labelledby="artifacts-title">
+          <div class="panel-heading">
+            <div>
+              <p class="section-label">Founder artifacts</p>
+              <h2 id="artifacts-title">Aligned outputs</h2>
+            </div>
+          </div>
+          <div class="tabs" id="artifactTabs" role="tablist" aria-label="Artifact tabs"></div>
+          <article class="artifact-preview">
+            <div class="artifact-meta" id="artifactMeta"></div>
+            <div class="markdown-body" id="artifactBody"></div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
