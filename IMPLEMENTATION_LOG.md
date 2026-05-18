@@ -74,8 +74,8 @@ Rendered Playwright verification on `http://127.0.0.1:3141`:
 ### GitHub Checkpoint
 
 - Branch: `codex/real-multi-agent-backend`.
-- Commit before log amendment: `b18a628 feat: add independent agent studio runtime`.
-- Push status: branch pushed to `origin/codex/real-multi-agent-backend`.
+- Implementation commit: `804b7d2 feat: add independent agent studio runtime`.
+- Push status: branch pushed to `origin/codex/real-multi-agent-backend`; final push updated after recording this checkpoint note.
 
 ## 2026-05-17 Multi-Agent System Restructure
 
