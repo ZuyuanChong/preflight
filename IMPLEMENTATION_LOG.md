@@ -1,5 +1,46 @@
 # Implementation Log
 
+## 2026-05-18 Agent Studio Output Readouts
+
+### What Changed
+
+- Added an `Agent outputs` section directly inside the Live Sprint / Agent Studio panel.
+- After a completed Preflight run, each agent now has an expandable readout showing:
+  - Task objective or activity task.
+  - Agent output summary.
+  - Findings when live Agent Studio execution data is available.
+  - Reasoning summary fallback for deterministic/demo runs.
+  - Tools used.
+  - Evidence contribution with source and assumption counts.
+  - Ledger items owned by that agent.
+  - Limitations/checks and run logs.
+- The first agent output opens by default after completion so users immediately see the inspection affordance.
+- Added responsive styling so output cards stack cleanly on mobile.
+
+### Verification
+
+Commands run:
+
+```powershell
+npm.cmd run typecheck
+npm.cmd run build
+```
+
+Results:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed. Next.js emitted nonfatal Webpack cache snapshot warnings after successful route generation.
+
+Rendered Playwright verification:
+
+- Restarted a demo-only dev server at `http://127.0.0.1:3142` after the old `3141` server served stale `_next` chunks.
+- Filled a new immigration-attorney intake and started Preflight.
+- Sprint completed to `11/11 agents`.
+- Agent Studio showed `Specialist readouts` and `11 outputs available`.
+- The Managing Partner card opened by default and showed Output, Reasoning summary, Tools used, Evidence contribution, Limitations and checks, and Run log.
+- Mobile viewport `390x844` returned `scrollWidth: 390` and confirmed the readout text was present.
+- Console contained one nonblocking `favicon.ico` 404 and normal Fast Refresh logs, with no app runtime errors.
+
 ## 2026-05-18 Real Multi-Agent Backend Runtime
 
 ### Skills And Tools Used

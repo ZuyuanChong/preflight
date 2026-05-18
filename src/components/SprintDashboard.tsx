@@ -12,6 +12,16 @@ export function SprintDashboard({ run }: SprintDashboardProps) {
   const progress = Math.round((completed / run.agents.length) * 100);
   const displayProgress = run.status === "starting" ? 12 : progress;
   const activeLogs = run.agents.flatMap((agent) => agent.logs.map((log) => ({ agent: agent.agentName, log })));
+  const activityLogsByAgent = new Map(run.multiAgentSystem.activityLogs.map((log) => [log.agentName, log]));
+  const executionsByAgent = new Map(
+    run.agentStudioReport?.agentExecutions.map((execution) => [execution.agentName, execution]) ?? []
+  );
+  const evidenceByAgent = new Map(
+    run.agents.map((agent) => [
+      agent.agentName,
+      run.evidence.filter((item) => item.agentName === agent.agentName)
+    ])
+  );
   const activeAgent = run.agents.find((agent) => agent.status === "running");
   const activeAgentIndex = run.agents.findIndex((agent) => agent.status === "running");
   const currentStageIndex =
@@ -179,6 +189,155 @@ export function SprintDashboard({ run }: SprintDashboardProps) {
           ))}
         </div>
       </details>
+
+      <section className="agent-output-panel" aria-labelledby="agent-output-heading">
+        <div className="agent-output-head">
+          <div>
+            <span>Agent outputs</span>
+            <h3 id="agent-output-heading">Specialist readouts</h3>
+          </div>
+          <small>
+            {run.status === "complete"
+              ? `${run.agents.length} outputs available`
+              : "Outputs unlock after the sprint completes"}
+          </small>
+        </div>
+
+        {run.status === "complete" ? (
+          <div className="agent-output-list">
+            {run.agents.map((agent, index) => {
+              const execution = executionsByAgent.get(agent.agentName);
+              const activityLog = activityLogsByAgent.get(agent.agentName);
+              const agentEvidence = evidenceByAgent.get(agent.agentName) ?? [];
+              const sourceCount =
+                execution?.sources.length ?? agent.sourceCount ?? agentEvidence.filter((item) => item.kind === "source").length;
+              const assumptionCount = agentEvidence.filter((item) => item.kind === "assumption").length;
+              const findings = execution?.findings ?? [];
+              const tools = execution?.toolsRequested.length
+                ? execution.toolsRequested
+                : agent.toolUseSummary.length
+                  ? agent.toolUseSummary
+                  : activityLog?.toolsUsed ?? [];
+              const limitations = execution?.limitations.length
+                ? execution.limitations
+                : agent.limitations?.length
+                  ? agent.limitations
+                  : activityLog?.reasoningSummary ?? [];
+
+              return (
+                <details className="agent-output-card" key={agent.id} open={index === 0}>
+                  <summary>
+                    <span>
+                      <strong>{agent.agentName}</strong>
+                      <small>{agent.taskObjective ?? activityLog?.task ?? agent.role}</small>
+                    </span>
+                    <span className="agent-output-meta">
+                      <em>{agent.confidence ?? execution?.confidence ?? "reviewed"}</em>
+                      <em>{sourceCount} source{sourceCount === 1 ? "" : "s"}</em>
+                    </span>
+                  </summary>
+
+                  <div className="agent-output-body">
+                    <div className="agent-output-section output-summary">
+                      <span>Output</span>
+                      <p>{execution?.summary ?? activityLog?.output ?? agent.summary}</p>
+                    </div>
+
+                    {findings.length ? (
+                      <div className="agent-output-section">
+                        <span>Findings</span>
+                        <ul className="agent-finding-list">
+                          {findings.map((finding) => (
+                            <li key={finding.id}>
+                              <strong>{finding.claim}</strong>
+                              <p>{finding.summary}</p>
+                              <small>
+                                {finding.confidence} confidence / {finding.sourceIds.length} linked source
+                                {finding.sourceIds.length === 1 ? "" : "s"}
+                              </small>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : activityLog?.reasoningSummary.length ? (
+                      <div className="agent-output-section">
+                        <span>Reasoning summary</span>
+                        <ul className="agent-finding-list">
+                          {activityLog.reasoningSummary.map((summary) => (
+                            <li key={summary}>{summary}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+
+                    <div className="agent-output-grid">
+                      <div className="agent-output-section">
+                        <span>Tools used</span>
+                        <div className="tool-chip-list">
+                          {tools.map((toolName) => (
+                            <span className="tool-chip" key={toolName}>
+                              {toolName}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="agent-output-section">
+                        <span>Evidence contribution</span>
+                        <p>
+                          {sourceCount} source-backed item{sourceCount === 1 ? "" : "s"} / {assumptionCount} assumption
+                          {assumptionCount === 1 ? "" : "s"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {agentEvidence.length ? (
+                      <div className="agent-output-section">
+                        <span>Ledger items</span>
+                        <ul className="agent-ledger-list">
+                          {agentEvidence.map((item) => (
+                            <li key={item.id}>
+                              <strong>{item.kind}</strong>
+                              <p>{item.claim}</p>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+
+                    {limitations.length ? (
+                      <div className="agent-output-section">
+                        <span>Limitations and checks</span>
+                        <ul className="agent-limitation-list">
+                          {limitations.slice(0, 4).map((limitation) => (
+                            <li key={limitation}>{limitation}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+
+                    {agent.logs.length ? (
+                      <div className="agent-output-section">
+                        <span>Run log</span>
+                        <ul className="agent-limitation-list">
+                          {agent.logs.map((log) => (
+                            <li key={log}>{log}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                </details>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="agent-output-empty">
+            <strong>Run Preflight to inspect each agent output.</strong>
+            <p>The sprint will expose each agent's task, output, tools, evidence contribution, and remaining limitations here.</p>
+          </div>
+        )}
+      </section>
 
       <div className="log-panel" aria-live="polite">
         <strong>Sprint log</strong>
