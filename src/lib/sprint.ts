@@ -138,7 +138,7 @@ export function markRunStartupFailed(run: PreflightRun, message: string): Prefli
       logs: index === 0 ? [message] : [],
       summary:
         index === 0
-          ? "Startup failed before the venture studio could dispatch. Retry or load the completed demo."
+          ? "Startup failed before the venture studio could dispatch. Retry Start Preflight after checking the brief or server connection."
           : "Waiting for a successful startup before this specialist can run."
     }))
   };
@@ -184,21 +184,5 @@ export function applySprintStep(run: PreflightRun, step: number): PreflightRun {
           logs: agent.logs.length ? agent.logs : [sprintLogLines[index]]
         }))
       : agents
-  };
-}
-
-export function loadCompletedRun(brief?: VentureBrief): PreflightRun {
-  const run = brief ? createRunFromBrief(brief) : createIdleRun();
-
-  return {
-    ...run,
-    status: "complete",
-    agents: run.agents.map((agent, index) => ({
-      ...agent,
-      status: "complete",
-      startedAt: agent.startedAt ?? "2026-05-17T09:00:00.000Z",
-      completedAt: agent.completedAt ?? "2026-05-17T09:12:00.000Z",
-      logs: [sprintLogLines[index]]
-    }))
   };
 }

@@ -113,7 +113,7 @@ export function ArtifactTabs({ artifacts, brief, verdict, evidenceIds }: Artifac
       ) : (
         <div className="locked-state">
           <strong>No founder artifacts generated</strong>
-          <p>Run Preflight or load the completed demo to unlock the artifact packet.</p>
+          <p>Run Preflight to unlock the artifact packet.</p>
         </div>
       )}
     </section>

@@ -939,3 +939,28 @@ Verification:
   - Idle state showed `Ready to dispatch agents`, `0%`, 11 pending agent steps, and `11 remaining`.
   - Running state showed `Running Intake and Clarification`, `Stage 2 of 11`, 1 completed step, 1 active step, 9 queued steps, and no horizontal overflow.
   - Completed 390px mobile state showed all 11 agent step markers, `100%`, and no horizontal overflow.
+
+## Removed Static And Completed Demo Entrypoints - 2026-05-18
+
+What changed:
+
+- Removed the visible `Load completed demo` button from the intake controls.
+- Changed the first load state to an empty founder brief instead of a prefilled demo brief.
+- Removed completed-demo and static-demo wording from the app copy, empty states, failed-start guidance, and multi-agent UI labels.
+- Deleted the standalone `static-demo` fallback files so the website path is the Next.js app only.
+- Updated README references that pointed users toward the removed static/completed demo entrypoints.
+
+Verification:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed. Build emitted nonfatal Webpack cache snapshot warnings after route generation.
+- `npm.cmd run test:artifacts` passed: 2/2 tests.
+- `npm.cmd run test:multi-agent` passed: 2/2 tests.
+- `npm.cmd run test:scorecard` passed: 3/3 tests.
+- Local dev server ran at `http://127.0.0.1:3004`.
+- Browser verification:
+  - Desktop first load showed empty intake fields, only `Start Preflight` and `Reset` in the intake actions, and no `Load completed demo` control.
+  - Desktop first load contained no `completed demo`, `static demo`, or `demo fallback` wording.
+  - Starting a preflight still moved the sprint panel into the running state with `Running Managing Partner`.
+  - Running state contained no `completed demo`, `static demo`, or `demo fallback` wording.
+  - 390px mobile first load showed only `Start Preflight` and `Reset`, empty intake fields, and no horizontal overflow.

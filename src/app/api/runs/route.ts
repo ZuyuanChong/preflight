@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       {
         mode: "demo",
         run: createRunFromBrief(normalizeBrief({})),
-        warning: "Request body was not valid JSON, so Preflight returned demo fallback output."
+        warning: "Request body was not valid JSON, so Preflight could not start."
       },
       { status: 400 }
     );
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       mode: "demo",
       run: createRunFromBrief(brief),
-      warning: "OPENAI_API_KEY was not available to the server, so Preflight used demo fallback output."
+      warning: "OPENAI_API_KEY was not available to the server, so Preflight generated a local run package."
     });
   }
 

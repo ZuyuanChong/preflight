@@ -46,7 +46,7 @@ export function SprintDashboard({ run }: SprintDashboardProps) {
       : run.status === "complete"
         ? "All specialist passes are complete and the blueprint is unlocked."
         : run.status === "failed"
-          ? "Retry Start Preflight or load the completed demo when you want a deterministic fallback."
+          ? "Retry Start Preflight after checking the brief or server connection."
           : "Start Preflight to begin the backend agent workflow.";
 
   const missionTitle = activeAgent
@@ -66,7 +66,7 @@ export function SprintDashboard({ run }: SprintDashboardProps) {
       : run.status === "complete"
         ? "All specialist passes are complete. The blueprint and artifacts are unlocked."
         : run.status === "failed"
-          ? "The last startup attempt failed before agents could run. Retry Start Preflight or load the completed demo."
+          ? "The last startup attempt failed before agents could run. Retry Start Preflight after checking the brief or server connection."
           : "Start the preflight to dispatch the venture studio agents.";
 
   function agentDescription(agent: PreflightRun["agents"][number]) {
