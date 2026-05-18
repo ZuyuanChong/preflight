@@ -311,7 +311,7 @@ ${bullets(context.risks.slice(0, 4))}
 - Artifact review: open each artifact and verify it uses the same verdict, ICP, assumptions, and risks.
 
 ## MVP Features
-- Structured intake with sensible demo defaults.
+- Structured intake with sensible founder defaults.
 - Live sprint status with specialist summaries and log lines.
 - Evidence ledger that separates sourced claims from assumptions.
 - Quality gates for missing citations, generic filler, unsupported numbers, contradictions, weak assumptions, and overclaims.

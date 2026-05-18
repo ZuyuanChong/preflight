@@ -31,7 +31,7 @@ export const demoQualityIssues: QualityIssue[] = [
     severity: "warn",
     type: "uncertain_competitor",
     message: "General AI research tools are substitute categories until direct competitors are sourced.",
-    suggestedFix: "Categorize as substitutes in demo mode and source exact competitors in live evidence mode."
+    suggestedFix: "Categorize as substitutes until live evidence collection sources exact competitors."
   },
   {
     id: "q-weak-assumption",
@@ -39,7 +39,7 @@ export const demoQualityIssues: QualityIssue[] = [
     severity: "fail",
     type: "weak_assumption",
     message: "Willingness to pay is business-critical and still untested.",
-    suggestedFix: "Make willingness to pay the first validation experiment after the demo."
+    suggestedFix: "Make willingness to pay the first validation experiment after launch."
   },
   {
     id: "q-overclaim",

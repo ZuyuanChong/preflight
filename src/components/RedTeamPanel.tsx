@@ -28,7 +28,7 @@ export function RedTeamPanel({ run }: { run: PreflightRun }) {
       ) : (
         <div className="locked-state">
           <strong>No critique recorded</strong>
-          <p>Start a sprint or load the completed demo to reveal the pressure test.</p>
+          <p>Start Preflight to reveal the pressure test.</p>
         </div>
       )}
     </section>

@@ -29,12 +29,12 @@ const TOOLS = {
   clarificationScanner: tool("clarification-scanner", "Clarification scanner", "quality_review", "Identifies missing inputs that would block a useful run."),
   hypothesisMapper: tool("hypothesis-mapper", "Hypothesis mapper", "research_synthesis", "Turns a brief into testable assumptions and specialist questions."),
   webSearch: tool("web-search", "Web search", "web_search", "Finds external sources, market signals, substitutes, and competitor context.", "optional_live"),
-  seededEvidence: tool("seeded-evidence", "Seeded evidence", "web_search", "Uses verified demo citations when live search is unavailable.", "demo_seeded"),
+  seededEvidence: tool("seeded-evidence", "Seeded evidence", "web_search", "Uses verified source citations when live search is unavailable.", "demo_seeded"),
   sourceVerifier: tool("source-verifier", "Source verifier", "quality_review", "Keeps URL-backed claims separate from assumptions."),
   customerResearch: tool("customer-research", "Customer research synthesis", "research_synthesis", "Synthesizes ICP, pain, buying trigger, and interview questions."),
   interviewPlanner: tool("interview-planner", "Interview planner", "research_synthesis", "Produces customer-discovery questions and validation prompts."),
   prdReviewer: tool("prd-reviewer", "PRD reviewer", "document_review", "Checks MVP scope, workflows, acceptance criteria, and non-goals."),
-  feasibilityDebugger: tool("feasibility-debugger", "Technical feasibility debugger", "technical_debugging", "Flags UX, implementation, and demo reliability risks."),
+  feasibilityDebugger: tool("feasibility-debugger", "Technical feasibility debugger", "technical_debugging", "Flags UX, implementation, and run reliability risks."),
   unitEconomics: tool("unit-economics-sheet", "Unit economics worksheet", "data_analysis", "Models pricing assumptions, cost drivers, and sensitivity risk."),
   pricingSensitivity: tool("pricing-sensitivity", "Pricing sensitivity analysis", "data_analysis", "Stress-tests monetization claims and unsupported numbers."),
   channelResearch: tool("channel-research", "Channel research", "web_search", "Checks channel/substitute context when live search is available.", "optional_live"),
@@ -96,7 +96,7 @@ export const AGENT_CONTRACTS: AgentContract[] = [
       "Decide whether to ask one clarification question or proceed with recorded assumptions.",
       "Preserve user preferences and constraints."
     ],
-    inputs: ["Founder text", "Form fields", "Known demo constraints"],
+    inputs: ["Founder text", "Form fields", "Known run constraints"],
     outputs: ["Structured venture brief", "Clarification need", "User preference notes"],
     toolsOrDataSources: ["Venture brief schema", "User preference memory"],
     mustNotDo: ["Score the business.", "Create the final strategy.", "Add fake customer detail."],
@@ -147,7 +147,7 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     ],
     inputs: ["Venture brief", "Framing memo", "Allowed source list"],
     outputs: ["Evidence ledger entries", "Market risk notes", "Competitor or substitute labels"],
-    toolsOrDataSources: ["Seeded demo evidence", "Tavily or web search when available", "Evidence validation rules"],
+    toolsOrDataSources: ["Seeded evidence", "Tavily or web search when available", "Evidence validation rules"],
     mustNotDo: ["Invent citations.", "Treat generated text as sourced research.", "Decide the final verdict."],
     handoffConditions: ["Pass the evidence ledger to Customer, Business/GTM, Red Team, and Quality Control."],
     successCriteria: ["Every market claim is either sourced or clearly labeled as an assumption."]
@@ -183,7 +183,7 @@ export const AGENT_CONTRACTS: AgentContract[] = [
     coreResponsibilities: [
       "Scope the minimum product surface needed for the decision workflow.",
       "Separate MVP features from later infrastructure.",
-      "Identify UX or technical risks that could weaken the demo or product promise."
+      "Identify UX or technical risks that could weaken the product promise."
     ],
     inputs: ["Venture brief", "ICP analysis", "Evidence ledger"],
     outputs: ["MVP scope", "User journey", "Feature priorities", "Non-goals", "Feasibility risks"],
@@ -364,7 +364,7 @@ export function buildAgentActivityLogs(input: {
       task: "Separate source-backed market evidence from assumptions.",
       toolsUsed: ["Web search", "Seeded evidence", "Source verifier"],
       reasoningSummary: [
-        "Used seeded verified citations in demo mode and kept live web search as an optional server-side capability.",
+        "Used available verified citations and kept live web search as an optional server-side capability.",
         `Classified ${sourceCount} source-backed claim(s) and ${assumptionCount} assumption(s).`
       ],
       output: "Updated the evidence ledger with source labels, assumption labels, and validation gaps.",
@@ -385,7 +385,7 @@ export function buildAgentActivityLogs(input: {
       toolsUsed: ["PRD reviewer", "Technical feasibility debugger"],
       reasoningSummary: [
         "Kept the first product surface focused on intake, sprint state, evidence, gates, verdict, and artifacts.",
-        "Flagged live search, exports, auth, and persistence as later infrastructure unless the local demo remains reliable."
+        "Flagged live search, exports, auth, and persistence as later infrastructure unless the local run remains reliable."
       ],
       output: "Produced MVP scope, non-goals, acceptance criteria, and feasibility risks.",
       handoffTo: "Quality Control"
@@ -614,11 +614,11 @@ export function buildMultiAgentSystem(input: {
     ],
     memory: [
       {
-        id: "memory-user-demo",
+        id: "memory-user-run",
         kind: "user_preference",
         ownerAgent: "Intake and Clarification",
-        title: "Demo reliability",
-        detail: "The local demo must work without API keys and must keep deterministic fallback output available.",
+        title: "Run reliability",
+        detail: "The local run must work without exposing API keys and must keep output deterministic when live services are unavailable.",
         visibility: "shared"
       },
       {

@@ -70,7 +70,7 @@ export function EvidenceLedger({ evidence }: { evidence: EvidenceItem[] }) {
         ) : (
           <div className="locked-state">
             <strong>No evidence recorded</strong>
-            <p>Start a preflight or load the completed demo to populate source-backed claims and assumptions.</p>
+            <p>Start Preflight to populate source-backed claims and assumptions.</p>
           </div>
         )}
       </div>

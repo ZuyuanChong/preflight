@@ -11,8 +11,14 @@ const typeLabels: Record<AgentType, string> = {
 
 const availabilityLabels: Record<AgentTool["availability"], string> = {
   always: "always on",
-  demo_seeded: "demo seeded",
+  demo_seeded: "seeded",
   optional_live: "optional live"
+};
+
+const operatingModeLabels: Record<PreflightRun["multiAgentSystem"]["operatingMode"], string> = {
+  "demo-deterministic": "local run",
+  "live-server": "live server",
+  "static-fallback": "local fallback"
 };
 
 interface MultiAgentSystemPanelProps {
@@ -55,7 +61,7 @@ export function MultiAgentSystemPanel({ onOpenChange, open, run }: MultiAgentSys
           <p>{system.overview}</p>
         </div>
         <span className="summary-actions">
-          <span className="preview-chip">{system.operatingMode.replace("-", " ")}</span>
+          <span className="preview-chip">{operatingModeLabels[system.operatingMode]}</span>
           <span className="collapse-indicator" aria-hidden="true" />
         </span>
       </summary>

@@ -6,11 +6,9 @@ interface IntakePanelProps {
   brief: VentureBrief;
   isRunning: boolean;
   isGenerating: boolean;
-  modeLabel: string;
   notice?: string;
   onBriefChange: (brief: VentureBrief) => void;
   onStart: () => void;
-  onLoadComplete: () => void;
   onReset: () => void;
 }
 
@@ -18,11 +16,9 @@ export function IntakePanel({
   brief,
   isRunning,
   isGenerating,
-  modeLabel,
   notice,
   onBriefChange,
   onStart,
-  onLoadComplete,
   onReset
 }: IntakePanelProps) {
   function updateField(field: keyof VentureBrief, value: string) {
@@ -47,7 +43,7 @@ export function IntakePanel({
           <p className="section-label">Preflight console</p>
           <h1 id="intake-heading">Intake</h1>
         </div>
-        <span className="mode-chip">{modeLabel}</span>
+        <span className="mode-chip">Founder brief</span>
       </div>
 
       <label>
@@ -95,9 +91,6 @@ export function IntakePanel({
           disabled={isRunning || isGenerating || !brief.idea.trim()}
         >
           {isGenerating ? "Starting agents" : isRunning ? "Sprint running" : "Start Preflight"}
-        </button>
-        <button className="secondary-button" onClick={onLoadComplete} disabled={isRunning || isGenerating}>
-          Load completed demo
         </button>
         <button className="ghost-button" onClick={onReset} disabled={isRunning || isGenerating}>
           Reset

@@ -41,8 +41,8 @@ export const demoVerdict: FinalVerdict = {
 };
 
 export const demoAgents = buildAgentRunsFromContracts({
-  "Managing Partner": "Keep the demo focused on pre-build decision quality rather than broad startup advice.",
-  "Intake and Clarification": "The founder brief is complete enough to run without interrupting the demo.",
+  "Managing Partner": "Keep the run focused on pre-build decision quality rather than broad startup advice.",
+  "Intake and Clarification": "The founder brief is complete enough to run without interrupting the sprint.",
   "Venture Framer": "The critical unknown is whether founders pay for confidence before they build.",
   "Market Evidence": "Use sourced hackathon constraints and label competitor categories as assumptions until live search is added.",
   "Customer and ICP": "The first ICP is a solo builder deciding whether to spend a weekend on an MVP.",
@@ -88,7 +88,7 @@ export const demoEvidence: EvidenceItem[] = [
   {
     id: "ev-assumption-substitutes",
     kind: "assumption",
-    claim: "General AI research tools, pitch helpers, and startup templates are substitute categories, not sourced direct competitors in demo mode.",
+    claim: "General AI research tools, pitch helpers, and startup templates are substitute categories until exact competitors are sourced.",
     summary: "Live evidence mode should replace this with real competitor URLs before submission claims are made.",
     confidence: "medium",
     agentName: "Market Evidence"

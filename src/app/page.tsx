@@ -9,12 +9,10 @@ import { MultiAgentSystemPanel } from "@/components/MultiAgentSystemPanel";
 import { QualityGatePanel } from "@/components/QualityGatePanel";
 import { RedTeamPanel } from "@/components/RedTeamPanel";
 import { SprintDashboard } from "@/components/SprintDashboard";
-import { demoBrief } from "@/data/demo-run";
 import {
   applySprintStep,
   createIdleRun,
   emptyBrief,
-  loadCompletedRun,
   markRunStartupFailed,
   prepareRunForSprint,
   prepareRunForStartup
@@ -29,13 +27,13 @@ interface RunResponse {
 }
 
 export default function Home() {
-  const [brief, setBrief] = useState<VentureBrief>(demoBrief);
-  const [run, setRun] = useState<PreflightRun>(() => createIdleRun(demoBrief));
+  const [brief, setBrief] = useState<VentureBrief>(emptyBrief);
+  const [run, setRun] = useState<PreflightRun>(() => createIdleRun(emptyBrief));
   const [step, setStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isArchitectureOpen, setArchitectureOpen] = useState(false);
   const [notice, setNotice] = useState<string | undefined>(
-    "Start Preflight requests the server when clicked. Load completed demo remains the explicit fallback."
+    "Enter a startup idea, then start Preflight to dispatch the agent sprint."
   );
 
   useEffect(() => {
@@ -180,8 +178,7 @@ export default function Home() {
       const payload = (await response.json()) as RunResponse;
 
       if (!response.ok) {
-        const warning =
-          payload.warning || "OpenAI generation did not finish. Retry Start Preflight or load the completed demo.";
+        const warning = payload.warning || "Preflight could not start. Check the brief and try again.";
         await holdStartupFrame();
         setRun((currentRun) => markRunStartupFailed(currentRun, warning));
         setNotice(warning);
@@ -189,8 +186,7 @@ export default function Home() {
       }
 
       if (!payload.run) {
-        const warning =
-          payload.warning || "The server did not return a run. Retry Start Preflight or load the completed demo.";
+        const warning = payload.warning || "The server did not return a run. Retry Start Preflight to try again.";
         await holdStartupFrame();
         setRun((currentRun) => markRunStartupFailed(currentRun, warning));
         setNotice(warning);
@@ -202,16 +198,15 @@ export default function Home() {
       setRun(applySprintStep(nextRun, 0));
       setStep(1);
       setNotice(
-        payload.warning ||
-          (payload.mode === "live"
-            ? "OpenAI generated this run from the current intake. Sources without URLs remain labeled as assumptions."
-            : "Demo fallback generated this run because live mode is unavailable.")
+        payload.mode === "live"
+          ? "OpenAI generated this run from the current intake. Sources without URLs remain labeled as assumptions."
+          : "Preflight generated a local run package from the current intake."
       );
     } catch (error) {
       const warning =
         error instanceof Error
-          ? `Live generation failed before a response was returned: ${error.message}. Retry Start Preflight or load the completed demo.`
-          : "Live generation failed before a response was returned. Retry Start Preflight or load the completed demo.";
+          ? `Live generation failed before a response was returned: ${error.message}. Retry Start Preflight to try again.`
+          : "Live generation failed before a response was returned. Retry Start Preflight to try again.";
       await holdStartupFrame();
       setRun((currentRun) => markRunStartupFailed(currentRun, warning));
       setNotice(warning);
@@ -220,19 +215,11 @@ export default function Home() {
     }
   }
 
-  function resetDemo() {
+  function resetWorkspace() {
     setBrief(emptyBrief);
     setRun(createIdleRun(emptyBrief));
     setStep(0);
-    setNotice("Workspace reset. Enter a new idea or load the completed demo.");
-  }
-
-  function loadComplete() {
-    const completedBrief = brief.idea.trim() ? brief : demoBrief;
-    setBrief(completedBrief);
-    setRun(loadCompletedRun(completedBrief));
-    setStep(0);
-    setNotice("Loaded deterministic completed demo. Use Start Preflight for OpenAI-generated output.");
+    setNotice("Workspace reset. Enter a new idea to start a fresh preflight.");
   }
 
   return (
@@ -272,12 +259,10 @@ export default function Home() {
           brief={brief}
           isRunning={isRunning}
           isGenerating={isGenerating}
-          modeLabel={run.mode === "live" ? "OpenAI live" : "Demo fallback"}
           notice={notice}
           onBriefChange={setBrief}
           onStart={startSprint}
-          onLoadComplete={loadComplete}
-          onReset={resetDemo}
+          onReset={resetWorkspace}
         />
 
         <section className="panel summary-panel" aria-label="Preflight summary">

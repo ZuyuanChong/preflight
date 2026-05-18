@@ -12,7 +12,7 @@ This repository is set up for an autonomous Codex Goals build. The latest implem
 
 - [AGENTS.md](./AGENTS.md) - mandatory Codex operating manual with skill/plugin triggers, autonomous rules, fallbacks, and verification gates.
 - [PLAN.md](./PLAN.md) - product plan, build priorities, data contracts, acceptance checklist.
-- [CODEX_HANDOVER.md](./CODEX_HANDOVER.md) - exact one-hour Codex handoff, fallback path, verification rules, seeded demo content.
+- [CODEX_HANDOVER.md](./CODEX_HANDOVER.md) - exact one-hour Codex handoff, verification rules, and seeded local-run content.
 - [RALPH_LOOP_LAUNCH.md](./RALPH_LOOP_LAUNCH.md) - human launch checklist and copy-ready Ralph loop Goal prompt.
 
 Codex must read the operating files before making implementation changes.
@@ -86,14 +86,14 @@ The operating architecture panel includes an agent activity console. Each log sh
 Use this as the primary unattended Goal:
 
 ```text
-/goal Build a demo-ready Preflight web app in this repository within the current autonomous work window. First read and follow AGENTS.md, PLAN.md, CODEX_HANDOVER.md, and README.md. Invoke the required skills/plugins in AGENTS.md when their trigger conditions appear. The app must let a judge enter a startup idea, run or simulate an AI venture preflight sprint, and show a polished Intake, Live Sprint, Blueprint, Quality Gate, Red Team, Evidence Ledger, and Artifacts experience. Verify by running the local app, checking desktop and mobile layouts with Browser/Playwright/webapp-testing, and running typecheck/build where available. Preserve README.md, PLAN.md, CODEX_HANDOVER.md, and AGENTS.md, document any generated work as hackathon-built, avoid Streamlit/basic RAG framing, and keep demo mode working without API keys. If dependency installation or dev server startup is blocked, create a static fallback demo and document the exact blocker and launch command.
+/goal Build a demo-ready Preflight web app in this repository within the current autonomous work window. First read and follow AGENTS.md, PLAN.md, CODEX_HANDOVER.md, and README.md. Invoke the required skills/plugins in AGENTS.md when their trigger conditions appear. The app must let a judge enter a startup idea, run or simulate an AI venture preflight sprint, and show a polished Intake, Live Sprint, Blueprint, Quality Gate, Red Team, Evidence Ledger, and Artifacts experience. Verify by running the local app, checking desktop and mobile layouts with Browser/Playwright/webapp-testing, and running typecheck/build where available. Preserve README.md, PLAN.md, CODEX_HANDOVER.md, and AGENTS.md, document any generated work as hackathon-built, and avoid Streamlit/basic RAG framing.
 ```
 
 Completion requires evidence:
 
-- The app or static fallback opens locally.
+- The Next.js app opens locally.
 - Intake is the first usable screen.
-- A seeded demo run works without API keys.
+- A Preflight run works from founder input.
 - Verdict, scorecard, evidence, quality issues, red-team critique, and artifacts are visible.
 - Desktop and mobile layouts do not overlap.
 - Setup and verification results are recorded in `IMPLEMENTATION_LOG.md`.
@@ -110,25 +110,25 @@ Codex must automatically use the capability matrix in [AGENTS.md](./AGENTS.md). 
 - Use Vercel only after local build verification and only if authentication is already available.
 - Commit and push useful checkpoints to GitHub autonomously when the rules in `AGENTS.md` say to do so.
 
-Missing optional integrations are not blockers. Missing both Next.js and static fallback capability is a blocker.
+Missing optional integrations are not blockers. Missing the Next.js app runtime is a blocker.
 
 ## Build Priorities
 
-### P0: Demo Mode
+### P0: Local Product Flow
 
-Build a deterministic, polished demo first. It must work with no API keys and no network dependency.
+Build a polished founder-facing flow first. It must let the user enter a real brief and start the agent sprint from the app.
 
 Required:
 
 - Typed local demo data.
-- Sprint simulation or completed demo run.
+- Sprint simulation from founder input.
 - Agent dashboard.
 - Evidence ledger.
 - Quality gates.
 - Red-team memo.
 - Blueprint.
 - Seven artifact tabs.
-- Demo reset or "load completed demo" control.
+- Reset control.
 
 ### P1: Server Skeleton
 
@@ -170,11 +170,7 @@ Preferred:
 
 Fallback:
 
-- `static-demo/index.html`
-- `static-demo/styles.css`
-- `static-demo/app.js`
-
-The static fallback is acceptable if dependency installation or dev server startup is blocked. It must still show the core Preflight workflow.
+- No standalone fallback bundle is currently shipped. Run the Next.js app for local and deployed usage.
 
 ## Expected Repository Shape
 
@@ -212,17 +208,6 @@ preflight/
         └── preflight.ts
 ```
 
-If using static fallback:
-
-```text
-preflight/
-└── static-demo/
-    ├── README.md
-    ├── app.js
-    ├── index.html
-    └── styles.css
-```
-
 ## Demo Seed
 
 Use Preflight itself as the reliable demo idea:
@@ -258,12 +243,12 @@ PREFLIGHT_MODE=auto
 Rules:
 
 - Put your real OpenAI key in `.env.local` as `OPENAI_API_KEY=...`.
-- Do not paste API keys into React components, static-demo files, browser local storage, or committed docs.
+- Do not paste API keys into React components, browser local storage, or committed docs.
 - `OPENAI_MODEL` is optional. If omitted, the server tries `gpt-5.4-mini`, then `gpt-4o-mini`.
 - `PREFLIGHT_OPENAI_TIMEOUT_MS` is optional. The default is `120000` and values are clamped between `30000` and `180000`.
 - `PREFLIGHT_MODE=auto` uses OpenAI when `OPENAI_API_KEY` is available and falls back to demo mode when it is not.
 - Use `PREFLIGHT_MODE=demo-only` only when you want to force seeded fallback output.
-- Live OpenAI failures no longer auto-render completed demo output. Use `Start Preflight` to retry or `Load completed demo` when you intentionally want the fallback.
+- Live OpenAI failures no longer auto-render a prefilled completed run. Use `Start Preflight` to retry.
 - OpenAI-generated evidence is treated as assumptions unless a verified evidence provider is connected. This avoids presenting model text as sourced research.
 - Prefer `TAVILY_API_KEY`; support `TAVILY_API` as a fallback alias because the local credential may be named that way.
 - Use Tavily only from server-side code or build-time scripts, never in browser/client code.
@@ -281,18 +266,11 @@ npm run build
 npm run dev
 ```
 
-If the project uses the static fallback, verify by opening:
-
-```powershell
-static-demo\index.html
-```
-
 Manual checks:
 
 - Intake appears first.
 - Start sprint works.
 - Demo reset works.
-- Completed demo works without API keys.
 - Evidence ledger separates sources from assumptions.
 - Quality gates show warning/failure states.
 - Red-team critique is specific.
@@ -325,7 +303,7 @@ Do not claim pre-existing planning text as shipped product code. The demo should
 
 The implementation loop is authorized to commit and push checkpoints to `origin` without manual supervision when:
 
-- the demo shell or static fallback first becomes runnable;
+- the app shell first becomes runnable;
 - P0 demo mode passes local verification;
 - Codex is about to start risky optional live API/search/deployment work;
 - the current Goal is verified; or
