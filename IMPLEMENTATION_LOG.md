@@ -964,3 +964,28 @@ Verification:
   - Starting a preflight still moved the sprint panel into the running state with `Running Managing Partner`.
   - Running state contained no `completed demo`, `static demo`, or `demo fallback` wording.
   - 390px mobile first load showed only `Start Preflight` and `Reset`, empty intake fields, and no horizontal overflow.
+
+## Journey Rail Flow Arrows - 2026-05-18
+
+What changed:
+
+- Added presentational arrow icons between the six top journey rail cards to make the process flow clearer.
+- Corrected the first arrow pass by restoring stable desktop rail spacing so the stage cards keep their prior width.
+- Enlarged the arrow markers and made them bridge the existing card gaps instead of acting like tiny floating badges.
+- Removed the circular arrow chrome after visual QA showed the badge could overlap nearby UI when zoomed or stacked on mobile.
+- Moved arrows out of each stage button and into dedicated connector grid tracks so SVG geometry cannot eat into card content.
+- Tightened the transparent arrow hitbox so it fits within its desktop connector track and mobile connector row.
+- Scoped the step-number CSS so it does not style the arrow wrapper.
+- Added responsive behavior so the same arrows rotate downward between stacked journey cards on mobile.
+
+Verification:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed. Build emitted nonfatal Webpack cache snapshot warnings after route generation.
+- Local dev server ran at `http://127.0.0.1:3005`.
+- Browser verification:
+  - Desktop 1440px rail rendered 6 equal-width journey cards and 5 transparent arrows without border, background, or shadow.
+  - Desktop arrows rendered in dedicated 22px connector columns between stage cards and did not intersect card boxes.
+  - 390px mobile rail rendered 6 equal-width stacked cards and 5 transparent rotated arrows between rows.
+  - 390px mobile arrows rendered in dedicated connector rows between stacked cards with no circular chrome.
+  - 390px mobile check reported no horizontal overflow.
