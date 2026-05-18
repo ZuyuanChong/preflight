@@ -1,8 +1,11 @@
 import { buildArtifacts } from "@/lib/artifacts";
 import { demoAgents } from "@/data/demo-run";
+import { runIndependentAgentStudio } from "@/lib/agent-studio-runtime";
 import { buildMultiAgentSystem } from "@/lib/multi-agent";
 import type {
+  AgentConfidence,
   AgentRun,
+  AgentStudioReport,
   Artifact,
   EvidenceItem,
   FinalVerdict,
@@ -16,12 +19,18 @@ import type {
 
 type AgentName = (typeof demoAgents)[number]["agentName"];
 
-interface GeneratedAgentSummary {
-  agentName: AgentName;
+export interface GeneratedAgentSummary {
+  agentName: string;
   summary: string;
+  executionThreadId?: string;
+  taskObjective?: string;
+  sourceCount?: number;
+  confidence?: AgentConfidence;
+  limitations?: string[];
+  toolsUsed?: string[];
 }
 
-interface GeneratedPreflight {
+export interface GeneratedPreflight {
   brief: VentureBrief;
   agentSummaries: GeneratedAgentSummary[];
   evidence: EvidenceItem[];
@@ -29,6 +38,7 @@ interface GeneratedPreflight {
   scorecard: VentureScorecard;
   finalVerdict: FinalVerdict;
   redTeamObjections: string[];
+  agentStudioReport?: AgentStudioReport;
 }
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
@@ -251,6 +261,7 @@ export async function generateOpenAIPreflight(input: VentureBrief, apiKey: strin
     status: "complete",
     brief: normalizedBrief,
     agents: buildAgentRuns(generated.agentSummaries),
+    agentStudioReport: generated.agentStudioReport,
     multiAgentSystem: buildMultiAgentSystem({
       brief: normalizedBrief,
       mode: "live",
@@ -274,7 +285,11 @@ async function requestGeneratedPreflight(brief: VentureBrief, apiKey: string): P
 
   for (const model of models) {
     try {
-      return await requestGeneratedPreflightWithModel(brief, apiKey, model);
+      const result = await runIndependentAgentStudio(brief, apiKey, model);
+      return {
+        ...result.generated,
+        agentStudioReport: result.report
+      };
     } catch (error) {
       lastError = error instanceof Error ? error : new Error("OpenAI generation failed.");
       const message = lastError.message.toLowerCase();
@@ -363,7 +378,13 @@ function buildAgentRuns(summaries: GeneratedAgentSummary[]): AgentRun[] {
       startedAt: undefined,
       completedAt: undefined,
       logs: [],
-      summary: safeText(match?.summary, agent.summary)
+      summary: safeText(match?.summary, agent.summary),
+      executionThreadId: match?.executionThreadId,
+      taskObjective: match?.taskObjective,
+      sourceCount: match?.sourceCount,
+      confidence: match?.confidence,
+      limitations: match?.limitations,
+      toolUseSummary: match?.toolsUsed?.length ? match.toolsUsed : agent.toolUseSummary
     };
   });
 }

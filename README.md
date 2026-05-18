@@ -59,6 +59,8 @@ The first autonomous build should produce these screens before any live API inte
 
 Preflight now models the venture sprint as an explicit multi-agent system instead of a loose role list. The app exposes agent ownership, role-specific tools, workflow order, shared memory, handoffs, revision requests, reviewer findings, and inspectable per-agent activity logs in the product UI.
 
+Live Agent Studio runs use an independent backend execution model. The server decomposes the founder request into role-specific tasks, gives every agent its own system prompt and task context, runs search-capable agents with their own server-side retrieval step when Tavily credentials are available, preserves per-agent sources, flags unsupported claims, and then asks the Managing Partner summarizer to synthesize only the merged structured outputs.
+
 - **Managing Partner:** Orchestrator that assigns work, resolves conflicts, and approves the final verdict.
 - **Intake and Clarification:** Converts founder input into a usable venture brief and records safe assumptions.
 - **Venture Framer:** Turns the brief into hypotheses, assumptions, unknowns, and specialist questions.

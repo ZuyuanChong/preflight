@@ -36,6 +36,10 @@ function loadOpenAIPreflightModule() {
       return { buildMultiAgentSystem: () => ({}) };
     }
 
+    if (id === "@/lib/agent-studio-runtime") {
+      return { runIndependentAgentStudio: async () => ({ generated: {}, report: {} }) };
+    }
+
     if (id === "@/data/demo-run") {
       return { demoAgents: agentNames.map((agentName) => ({ agentName })) };
     }

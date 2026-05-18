@@ -19,6 +19,27 @@ function loadMultiAgentModule() {
 
 const { AGENT_CONTRACTS, buildMultiAgentSystem } = loadMultiAgentModule();
 
+function loadAgentStudioRuntime() {
+  const source = readFileSync(new URL("../src/lib/agent-studio-runtime.ts", import.meta.url), "utf8");
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2020
+    }
+  }).outputText;
+  const module = { exports: {} };
+  const fn = new Function("exports", "module", "require", compiled);
+  fn(module.exports, module, (specifier) => {
+    if (specifier === "@/lib/multi-agent") {
+      return { AGENT_CONTRACTS };
+    }
+    return {};
+  });
+  return module.exports;
+}
+
+const { buildAgentExecutionPlan, mergeAgentEvidence, buildCrossAgentValidation } = loadAgentStudioRuntime();
+
 const brief = {
   idea: "AI preflight for founder ideas",
   targetCustomer: "solo technical founders",
@@ -118,4 +139,111 @@ test("multi-agent system exposes workflow, handoffs, memory, and review loop", (
   assert.ok(system.activityLogs.every((log) => log.reasoningSummary.length > 0));
   assert.ok(system.communicationProtocol.includes("Handoff From"));
   assert.ok(system.finalOutputRules.some((rule) => rule.includes("assumptions")));
+});
+
+test("agent studio backend decomposes work into independent execution contexts", () => {
+  const plan = buildAgentExecutionPlan(brief);
+  const byAgent = new Map(plan.map((assignment) => [assignment.agentName, assignment]));
+  const promptCount = new Set(plan.map((assignment) => assignment.systemPrompt)).size;
+
+  assert.equal(plan.length, AGENT_CONTRACTS.length);
+  assert.equal(promptCount, plan.length, "each agent must have a distinct system prompt");
+  assert.ok(plan.every((assignment) => assignment.taskObjective.length > 20));
+  assert.ok(plan.every((assignment) => assignment.requiredContext.length > 0));
+  assert.ok(plan.every((assignment) => assignment.toolPolicy.length > 0));
+  assert.ok(byAgent.get("Managing Partner").dependsOn.includes("Quality Control"));
+  assert.ok(byAgent.get("Venture Framer").dependsOn.includes("Intake and Clarification"));
+
+  const parallelAgents = plan.filter((assignment) => assignment.runsInParallelGroup === "specialist-analysis");
+  assert.deepEqual(
+    parallelAgents.map((assignment) => assignment.agentName),
+    ["Market Evidence", "Customer and ICP", "Product Strategy", "Business Modeler", "Growth Strategist"]
+  );
+
+  const searchAgents = plan.filter((assignment) => assignment.searchQueries.length > 0);
+  assert.deepEqual(searchAgents.map((assignment) => assignment.agentName), ["Market Evidence", "Growth Strategist"]);
+  assert.ok(searchAgents.every((assignment) => assignment.searchQueries.every((query) => query.length <= 390)));
+});
+
+test("agent studio backend preserves sources and flags unsupported claims", () => {
+  const source = {
+    id: "market-source-1",
+    agentName: "Market Evidence",
+    query: "founder validation market evidence",
+    url: "https://example.com/report#section",
+    title: "Market Report",
+    summary: "Source-backed market context.",
+    publishedDate: "2026-05-18",
+    score: 0.9
+  };
+  const duplicateSource = {
+    ...source,
+    id: "growth-source-1",
+    agentName: "Growth Strategist",
+    query: "founder channels"
+  };
+  const executions = [
+    {
+      agentName: "Market Evidence",
+      executionThreadId: "market-thread",
+      taskObjective: "Collect market evidence.",
+      toolsRequested: ["Web search"],
+      sources: [source],
+      findings: [
+        {
+          id: "market-finding-1",
+          agentName: "Market Evidence",
+          claim: "The target market has visible demand signals.",
+          summary: "The source describes relevant market behavior.",
+          sourceIds: ["market-source-1"],
+          confidence: "high",
+          limitations: []
+        }
+      ],
+      assumptions: [],
+      limitations: [],
+      confidence: "high",
+      summary: "Market evidence completed."
+    },
+    {
+      agentName: "Growth Strategist",
+      executionThreadId: "growth-thread",
+      taskObjective: "Collect channel evidence.",
+      toolsRequested: ["Web search"],
+      sources: [duplicateSource],
+      findings: [
+        {
+          id: "growth-finding-1",
+          agentName: "Growth Strategist",
+          claim: "The same source supports a channel test.",
+          summary: "The source also informs distribution.",
+          sourceIds: ["growth-source-1"],
+          confidence: "medium",
+          limitations: []
+        },
+        {
+          id: "growth-finding-2",
+          agentName: "Growth Strategist",
+          claim: "A 25% conversion rate is likely from founder communities.",
+          summary: "This is a forecast and has no cited proof.",
+          sourceIds: [],
+          confidence: "low",
+          limitations: ["No source-backed conversion evidence."]
+        }
+      ],
+      assumptions: ["Founder communities may convert."],
+      limitations: [],
+      confidence: "medium",
+      summary: "Growth strategy completed."
+    }
+  ];
+
+  const evidence = mergeAgentEvidence(executions);
+  const validation = buildCrossAgentValidation(executions, evidence);
+
+  assert.equal(evidence.filter((item) => item.kind === "source").length, 1, "duplicate URLs should merge");
+  assert.equal(evidence.filter((item) => item.kind === "assumption").length, 1, "unsourced findings become assumptions");
+  assert.ok(validation.unsupportedClaims.some((claim) => claim.includes("25% conversion rate")));
+  assert.ok(validation.qualityIssues.some((issue) => issue.type === "missing_citation"));
+  assert.ok(validation.qualityIssues.some((issue) => issue.type === "unsupported_number"));
 });

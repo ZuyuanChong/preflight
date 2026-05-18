@@ -21,6 +21,7 @@ export type AgentToolCategory =
   | "memory";
 export type AgentToolAvailability = "always" | "demo_seeded" | "optional_live";
 export type AgentActivityStatus = "queued" | "running" | "complete" | "blocked";
+export type AgentConfidence = "low" | "medium" | "high";
 
 export interface VentureBrief {
   idea: string;
@@ -45,6 +46,11 @@ export interface AgentRun {
   activityLogs: AgentActivityLog[];
   summary: string;
   toolUseSummary: string[];
+  executionThreadId?: string;
+  taskObjective?: string;
+  sourceCount?: number;
+  confidence?: AgentConfidence;
+  limitations?: string[];
 }
 
 export interface AgentTool {
@@ -140,6 +146,61 @@ export interface MultiAgentSystem {
   finalOutputRules: string[];
 }
 
+export interface AgentTaskAssignment {
+  agentName: string;
+  taskObjective: string;
+  requiredContext: string[];
+  toolPolicy: string[];
+  dependsOn: string[];
+  runsInParallelGroup?: string;
+}
+
+export interface AgentFinding {
+  id: string;
+  agentName: string;
+  claim: string;
+  summary: string;
+  sourceIds: string[];
+  confidence: AgentConfidence;
+  limitations: string[];
+}
+
+export interface AgentSourceReference {
+  id: string;
+  agentName: string;
+  query: string;
+  url: string;
+  title: string;
+  summary: string;
+  publishedDate?: string;
+  score?: number;
+}
+
+export interface AgentExecutionResult {
+  agentName: string;
+  executionThreadId: string;
+  taskObjective: string;
+  toolsRequested: string[];
+  sources: AgentSourceReference[];
+  findings: AgentFinding[];
+  assumptions: string[];
+  limitations: string[];
+  confidence: AgentConfidence;
+  summary: string;
+}
+
+export interface AgentStudioReport {
+  taskDecomposition: AgentTaskAssignment[];
+  agentExecutions: AgentExecutionResult[];
+  sourceCount: number;
+  assumptionCount: number;
+  mergedSourceUrls: string[];
+  unsupportedClaims: string[];
+  contradictions: string[];
+  synthesisConfidence: AgentConfidence;
+  limitations: string[];
+}
+
 export interface EvidenceItem {
   id: string;
   kind: EvidenceKind;
@@ -211,6 +272,7 @@ export interface PreflightRun {
   brief: VentureBrief;
   agents: AgentRun[];
   multiAgentSystem: MultiAgentSystem;
+  agentStudioReport?: AgentStudioReport;
   evidence: EvidenceItem[];
   qualityIssues: QualityIssue[];
   scorecard: VentureScorecard;

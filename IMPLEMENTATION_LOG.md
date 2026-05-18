@@ -1,5 +1,82 @@
 # Implementation Log
 
+## 2026-05-18 Real Multi-Agent Backend Runtime
+
+### Skills And Tools Used
+
+- `superpowers:executing-plans` for inline execution against the project plan.
+- `superpowers:using-git-worktrees` for isolation checks; created `codex/real-multi-agent-backend` from `origin/main` because the checkout was on `main`.
+- `tavily-best-practices` and `tavily-search` guidance for server-side web retrieval design.
+- `superpowers:systematic-debugging` for typecheck and test-harness failures.
+- `playwright` fallback for local rendered verification after the Browser plugin was not exposed as a callable tool.
+
+### What Changed
+
+- Added `src/lib/agent-studio-runtime.ts`, a real server-side Agent Studio runtime:
+  - Decomposes a founder request into role-specific agent assignments.
+  - Gives every agent its own system prompt, task objective, required context, tool policy, and execution thread id.
+  - Runs specialist agents in an independent parallel group after intake and framing.
+  - Runs search-capable agents with their own Tavily retrieval step when `TAVILY_API_KEY` or `TAVILY_API` is available.
+  - Converts retrieved source references into source-backed evidence and unsourced findings into assumptions.
+  - Deduplicates source URLs and filters low-score search results.
+  - Flags missing citations, unsupported numbers, weak source coverage, and cross-agent contradictions before final synthesis.
+  - Uses a final Managing Partner synthesis call over merged structured outputs instead of hidden shared reasoning.
+- Wired `generateOpenAIPreflight` through the independent runtime instead of the previous single shared OpenAI prompt.
+- Added optional `AgentStudioReport` and per-agent execution metadata to the run contract.
+- Expanded `tests/multi-agent-contract.test.mjs` so backend tests now fail if independent prompts, search assignments, source merging, or unsupported-claim validation regress.
+- Updated `tests/scorecard-scale.test.mjs` to stub the new runtime dependency.
+- Updated README to document that live Agent Studio runs use independent backend execution.
+
+### Verification
+
+Commands run:
+
+```powershell
+npm.cmd run typecheck
+npm.cmd run test:multi-agent
+npm.cmd run test:artifacts
+npm.cmd run test:scorecard
+npm.cmd run build
+```
+
+Results:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run test:multi-agent` passed: 4/4 tests.
+- `npm.cmd run test:artifacts` passed: 2/2 tests.
+- `npm.cmd run test:scorecard` passed: 3/3 tests.
+- `npm.cmd run build` passed. Next.js emitted nonfatal Webpack cache snapshot warnings after successful route generation.
+
+Local server verification:
+
+- `Start-Process` still hit the known Windows `Path`/`PATH` environment collision.
+- A demo-only dev server was launched through the Node-backed runtime at `http://127.0.0.1:3141`.
+- `GET /` returned 200 with title `Preflight`.
+- `GET /api/runs` returned 200 with mode `demo`.
+- `POST /api/runs` with a new accounting-copilot brief returned mode `demo`, 11 agents, 4 evidence items, and no `agentStudioReport` because `PREFLIGHT_MODE=demo-only` intentionally bypasses live generation.
+
+Rendered Playwright verification on `http://127.0.0.1:3141`:
+
+- Intake loaded first with empty fields.
+- Filled a new founder brief and started Preflight.
+- Sprint completed to `Complete`, `11/11 agents`, Pivot verdict, 2 sources, 2 assumptions, 7 quality gate issues, red-team critique, and 7 artifact tabs.
+- Evidence ledger separated source and assumption rows.
+- GTM Plan and Red-Team Memo artifact tabs opened.
+- Mobile viewport `390x844` reported `scrollWidth: 390`, so no horizontal overflow was detected.
+- Console had one nonblocking `favicon.ico` 404 and no app errors.
+
+### Known Notes
+
+- Live independent LLM execution was not called during verification because the local verification server was forced to `PREFLIGHT_MODE=demo-only`; the new backend architecture is covered by typecheck and focused contract tests.
+- Server-side Tavily search is optional and only runs when `TAVILY_API_KEY` or `TAVILY_API` is present. Without it, search-capable agents return limitations and source-sensitive findings stay assumptions.
+- The dev server remains available at `http://127.0.0.1:3141` for local inspection.
+
+### GitHub Checkpoint
+
+- Branch: `codex/real-multi-agent-backend`.
+- Commit before log amendment: `b18a628 feat: add independent agent studio runtime`.
+- Push status: branch pushed to `origin/codex/real-multi-agent-backend`.
+
 ## 2026-05-17 Multi-Agent System Restructure
 
 ### Skills And Tools Used
