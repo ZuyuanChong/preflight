@@ -667,14 +667,48 @@ function renderAgents() {
 
   const completed = agents.filter((agent) => agent.status === "complete").length;
   const starting = agents.filter((agent) => agent.status === "starting").length;
+  const running = agents.filter((agent) => agent.status === "running").length;
+  const blocked = agents.filter((agent) => agent.status === "blocked" || agent.status === "failed").length;
+  const activeAgent = agents.find((agent) => agent.status === "running");
+  const activeAgentIndex = agents.findIndex((agent) => agent.status === "running");
+  const currentStageIndex =
+    activeAgentIndex >= 0
+      ? activeAgentIndex
+      : runStatus === "complete"
+        ? agents.length - 1
+        : runStatus === "idle"
+          ? 0
+          : Math.min(completed, agents.length - 1);
+  const remaining = Math.max(agents.length - completed, 0);
   const progress = Math.round((completed / agents.length) * 100);
   const displayProgress = runStatus === "starting" ? 12 : progress;
-  $("progressLabel").textContent = runStatus === "starting" ? "Initializing workspace" : `${progress}% complete`;
-  $("progressAgents").textContent =
-    runStatus === "starting"
-      ? `${starting || agents.length} agents provisioning. First active pass starts after setup.`
-      : `${completed} of ${agents.length} agents finished`;
+  const headline = activeAgent
+    ? `Running ${activeAgent.name}`
+    : runStatus === "starting"
+      ? "Preparing backend run package"
+      : runStatus === "complete"
+        ? "Agent sprint complete"
+        : "Ready to dispatch agents";
+  const detail = activeAgent
+    ? `Stage ${currentStageIndex + 1} of ${agents.length}. ${remaining} specialist pass${remaining === 1 ? "" : "es"} remaining.`
+    : runStatus === "starting"
+      ? "Provisioning agent workspaces and waiting for the run package."
+      : runStatus === "complete"
+        ? "All specialist passes are complete and the blueprint is unlocked."
+        : "Start Preflight to begin the backend agent workflow.";
+  $("agentRosterStatus").textContent = `${completed} complete / ${running || starting} active / ${blocked} blocked`;
+  $("progressLabel").textContent = headline;
+  $("progressAgents").textContent = detail;
+  $("progressPercent").textContent = `${displayProgress}%`;
   $("progressBar").style.width = `${displayProgress}%`;
+  $("agentStepRail").innerHTML = agents
+    .map(
+      (agent, index) => `<span class="agent-step agent-step-${agent.status}" title="${agent.name}: ${agent.status}" aria-label="${index + 1}. ${agent.name}: ${agent.status}"><span>${index + 1}</span></span>`
+    )
+    .join("");
+  $("progressCurrent").textContent = `Current: ${runStatus === "idle" ? "Not started" : agents[currentStageIndex]?.name}`;
+  $("progressFinished").textContent = `${completed}/${agents.length} finished`;
+  $("progressRemaining").textContent = `${remaining} remaining`;
 }
 
 function renderAgentContracts() {

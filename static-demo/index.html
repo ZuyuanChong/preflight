@@ -202,15 +202,36 @@
             </div>
             <span class="status-pill status-idle" id="runStatus">idle</span>
           </div>
-          <div class="progress-row">
-            <div>
-              <strong id="progressLabel">0% complete</strong>
-              <span id="progressAgents">0 of 11 agents finished</span>
+          <div class="progress-dashboard" aria-label="Backend agent progress">
+            <div class="progress-head">
+              <div>
+                <span>Backend activity</span>
+                <strong id="progressLabel">Ready to dispatch agents</strong>
+                <p id="progressAgents">Start Preflight to begin the backend agent workflow.</p>
+              </div>
+              <strong class="progress-percent" id="progressPercent">0%</strong>
             </div>
-            <div class="progress-track"><span id="progressBar"></span></div>
+            <div class="progress-track progress-track-enhanced">
+              <span class="progress-fill" id="progressBar"></span>
+            </div>
+            <div class="agent-step-rail" id="agentStepRail" aria-label="Agent step status"></div>
+            <div class="progress-foot">
+              <span id="progressCurrent">Current: Not started</span>
+              <span id="progressFinished">0/11 finished</span>
+              <span id="progressRemaining">11 remaining</span>
+            </div>
           </div>
           <div class="active-agent-card" id="activeAgentCard"></div>
-          <div class="agent-list" id="agentList"></div>
+          <details class="agent-roster">
+            <summary class="agent-roster-summary">
+              <span>
+                <strong>Agent roster</strong>
+                <small id="agentRosterStatus">0 complete / 0 active / 0 blocked</small>
+              </span>
+              <span class="collapse-indicator" aria-hidden="true"></span>
+            </summary>
+            <div class="agent-list" id="agentList"></div>
+          </details>
           <div class="log-panel">
             <strong>Sprint log</strong>
             <ul id="logList"></ul>

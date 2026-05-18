@@ -7,10 +7,22 @@ interface SprintDashboardProps {
 export function SprintDashboard({ run }: SprintDashboardProps) {
   const completed = run.agents.filter((agent) => agent.status === "complete").length;
   const starting = run.agents.filter((agent) => agent.status === "starting").length;
+  const running = run.agents.filter((agent) => agent.status === "running").length;
+  const blocked = run.agents.filter((agent) => agent.status === "blocked" || agent.status === "failed").length;
   const progress = Math.round((completed / run.agents.length) * 100);
   const displayProgress = run.status === "starting" ? 12 : progress;
   const activeLogs = run.agents.flatMap((agent) => agent.logs.map((log) => ({ agent: agent.agentName, log })));
   const activeAgent = run.agents.find((agent) => agent.status === "running");
+  const activeAgentIndex = run.agents.findIndex((agent) => agent.status === "running");
+  const currentStageIndex =
+    activeAgentIndex >= 0
+      ? activeAgentIndex
+      : run.status === "complete"
+        ? run.agents.length - 1
+        : run.status === "idle"
+          ? 0
+          : Math.min(completed, run.agents.length - 1);
+  const remainingAgents = Math.max(run.agents.length - completed, 0);
   const statusLabel = {
     idle: "Idle",
     starting: "Starting",
@@ -18,6 +30,24 @@ export function SprintDashboard({ run }: SprintDashboardProps) {
     complete: "Complete",
     failed: "Needs attention"
   }[run.status];
+  const progressHeadline = activeAgent
+    ? `Running ${activeAgent.agentName}`
+    : run.status === "starting"
+      ? "Preparing backend run package"
+      : run.status === "complete"
+        ? "Agent sprint complete"
+        : run.status === "failed"
+          ? "Backend startup needs attention"
+          : "Ready to dispatch agents";
+  const progressDetail = activeAgent
+    ? `Stage ${currentStageIndex + 1} of ${run.agents.length}. ${remainingAgents} specialist pass${remainingAgents === 1 ? "" : "es"} remaining.`
+    : run.status === "starting"
+      ? "Provisioning agent workspaces and waiting for the run package."
+      : run.status === "complete"
+        ? "All specialist passes are complete and the blueprint is unlocked."
+        : run.status === "failed"
+          ? "Retry Start Preflight or load the completed demo when you want a deterministic fallback."
+          : "Start Preflight to begin the backend agent workflow.";
 
   const missionTitle = activeAgent
     ? activeAgent.agentName
@@ -61,22 +91,42 @@ export function SprintDashboard({ run }: SprintDashboardProps) {
         <span className={`status-pill status-${run.status}`}>{statusLabel}</span>
       </div>
 
-      <div className="progress-row">
-        <div>
-          <strong>{run.status === "starting" ? "Initializing workspace" : `${progress}% complete`}</strong>
-          <span>
-            {run.status === "starting"
-              ? `${starting || run.agents.length} agents provisioning. First active pass starts after setup.`
-              : `${completed} of ${run.agents.length} agents finished`}
-          </span>
+      <div className="progress-dashboard" aria-label="Backend agent progress">
+        <div className="progress-head">
+          <div>
+            <span>Backend activity</span>
+            <strong>{progressHeadline}</strong>
+            <p>{progressDetail}</p>
+          </div>
+          <strong className="progress-percent">{displayProgress}%</strong>
         </div>
+
         <div
-          className="progress-track"
+          className="progress-track progress-track-enhanced"
           aria-label={
             run.status === "starting" ? `Startup readiness ${displayProgress}%` : `Sprint progress ${progress}%`
           }
         >
-          <span style={{ width: `${displayProgress}%` }} />
+          <span className="progress-fill" style={{ width: `${displayProgress}%` }} />
+        </div>
+
+        <div className="agent-step-rail" aria-label="Agent step status">
+          {run.agents.map((agent, index) => (
+            <span
+              aria-label={`${index + 1}. ${agent.agentName}: ${agent.status}`}
+              className={`agent-step agent-step-${agent.status}`}
+              key={agent.id}
+              title={`${agent.agentName}: ${agent.status}`}
+            >
+              <span>{index + 1}</span>
+            </span>
+          ))}
+        </div>
+
+        <div className="progress-foot">
+          <span>Current: {run.status === "idle" ? "Not started" : run.agents[currentStageIndex]?.agentName}</span>
+          <span>{completed}/{run.agents.length} finished</span>
+          <span>{remainingAgents} remaining</span>
         </div>
       </div>
 
@@ -106,20 +156,29 @@ export function SprintDashboard({ run }: SprintDashboardProps) {
         <p>{missionDetail}</p>
       </div>
 
-      <div className="agent-list">
-        {run.agents.map((agent) => (
-          <article className={`agent-row agent-row-${agent.status}`} key={agent.id}>
-            <span className={`status-dot dot-${agent.status}`} aria-hidden="true" />
-            <div>
-              <div className="agent-title">
-                <strong>{agent.agentName}</strong>
-                <span className="role-chip">{agent.status}</span>
+      <details className="agent-roster">
+        <summary className="agent-roster-summary">
+          <span>
+            <strong>Agent roster</strong>
+            <small>{completed} complete / {running || starting} active / {blocked} blocked</small>
+          </span>
+          <span className="collapse-indicator" aria-hidden="true" />
+        </summary>
+        <div className="agent-list">
+          {run.agents.map((agent) => (
+            <article className={`agent-row agent-row-${agent.status}`} key={agent.id}>
+              <span className={`status-dot dot-${agent.status}`} aria-hidden="true" />
+              <div>
+                <div className="agent-title">
+                  <strong>{agent.agentName}</strong>
+                  <span className="role-chip">{agent.status}</span>
+                </div>
+                <p>{agentDescription(agent)}</p>
               </div>
-              <p>{agentDescription(agent)}</p>
-            </div>
-          </article>
-        ))}
-      </div>
+            </article>
+          ))}
+        </div>
+      </details>
 
       <div className="log-panel" aria-live="polite">
         <strong>Sprint log</strong>

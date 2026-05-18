@@ -888,3 +888,54 @@ Known notes:
 
 - PowerShell blocked `npm.ps1` because local script execution is disabled, so verification used `npm.cmd` for equivalent npm scripts.
 - In-app browser screenshot capture timed out during this session, so verification used DOM state, console logs, and interaction evidence.
+
+## Collapsible Agent Studio Roster - 2026-05-18
+
+What changed:
+
+- Made the long Agent Studio roster inside the Live Sprint panel collapsible.
+- Added a compact `Agent roster` summary showing complete, active, and blocked agent counts.
+- Kept the current mission and sprint log visible outside the collapsed roster so the live demo still shows progress without stretching the page.
+- Mirrored the same collapsible roster behavior in the static fallback.
+
+Verification:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed. Build emitted nonfatal Webpack cache snapshot warnings after route generation.
+- `npm.cmd run test:artifacts` passed: 2/2 tests.
+- `npm.cmd run test:multi-agent` passed: 2/2 tests.
+- `npm.cmd run test:scorecard` passed: 3/3 tests.
+- `node --check static-demo\app.js` passed.
+- Local dev server ran at `http://127.0.0.1:3002`.
+- Browser verification:
+  - Agent roster was closed by default.
+  - Closed sprint panel height was about 478px.
+  - Opening the roster revealed all 11 agent rows.
+  - Open sprint panel height increased to about 1746px, confirming the roster is what previously stretched the page.
+  - Completed demo updated the roster summary to `11 complete / 0 active / 0 blocked`.
+  - Desktop and 390px mobile checks reported no horizontal overflow.
+  - Browser console returned no warning or error logs.
+
+## Backend Progress UI Polish - 2026-05-18
+
+What changed:
+
+- Reworked the Live Sprint progress area into a backend activity dashboard with a clear status headline, stage detail, percent badge, and progress footer.
+- Added an animated progress fill for starting/running states, with reduced-motion support for users who prefer less animation.
+- Added an 11-step agent rail that distinguishes pending, active, completed, blocked, and failed agent states.
+- Kept the design compact and calm so the collapsible roster can stay closed while users still understand the current backend activity.
+- Mirrored the enhanced progress UI in the static fallback.
+
+Verification:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed. Build emitted nonfatal Webpack cache snapshot warnings after route generation.
+- `npm.cmd run test:artifacts` passed: 2/2 tests.
+- `npm.cmd run test:multi-agent` passed: 2/2 tests.
+- `npm.cmd run test:scorecard` passed: 3/3 tests.
+- `node --check static-demo\app.js` passed.
+- Local dev server ran at `http://127.0.0.1:3003`.
+- Browser verification:
+  - Idle state showed `Ready to dispatch agents`, `0%`, 11 pending agent steps, and `11 remaining`.
+  - Running state showed `Running Intake and Clarification`, `Stage 2 of 11`, 1 completed step, 1 active step, 9 queued steps, and no horizontal overflow.
+  - Completed 390px mobile state showed all 11 agent step markers, `100%`, and no horizontal overflow.

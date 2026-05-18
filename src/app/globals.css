@@ -535,7 +535,8 @@ button:disabled {
 }
 
 .collapsible-panel[open] > .collapsible-summary .collapse-indicator::before,
-.collapsible-card[open] > .collapsible-card-summary .collapse-indicator::before {
+.collapsible-card[open] > .collapsible-card-summary .collapse-indicator::before,
+.agent-roster[open] > .agent-roster-summary .collapse-indicator::before {
   transform: rotate(225deg) translate(-1px, -1px);
 }
 
@@ -931,6 +932,149 @@ button:disabled {
   transition: width 240ms ease;
 }
 
+.progress-dashboard {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(20, 124, 120, 0.22);
+  border-radius: 8px;
+  background: linear-gradient(135deg, #f7fbfa, #fff);
+  margin-bottom: 14px;
+  padding: 13px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.progress-head,
+.progress-foot {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.progress-head div {
+  display: grid;
+  gap: 3px;
+}
+
+.progress-head span {
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.progress-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.progress-percent {
+  min-width: 58px;
+  border: 1px solid rgba(20, 124, 120, 0.2);
+  border-radius: 999px;
+  background: #fff;
+  padding: 7px 10px;
+  text-align: center;
+}
+
+.progress-track-enhanced {
+  position: relative;
+  height: 13px;
+  box-shadow: inset 0 0 0 1px rgba(20, 35, 43, 0.04);
+}
+
+.progress-fill {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill::after {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.58), transparent);
+  content: "";
+  opacity: 0;
+}
+
+.sprint-panel-running .progress-fill::after,
+.sprint-panel-starting .progress-fill::after {
+  animation: progress-sheen 2.1s ease-in-out infinite;
+  opacity: 1;
+}
+
+.agent-step-rail {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.agent-step {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  background: #e8f0f2;
+}
+
+.agent-step span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid rgba(20, 35, 43, 0.08);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.agent-step-complete {
+  background: rgba(20, 124, 120, 0.16);
+}
+
+.agent-step-complete span {
+  border-color: rgba(20, 124, 120, 0.2);
+  background: var(--accent);
+  color: #fff;
+}
+
+.agent-step-running,
+.agent-step-starting {
+  background: rgba(173, 106, 0, 0.16);
+}
+
+.agent-step-running span,
+.agent-step-starting span {
+  border-color: rgba(173, 106, 0, 0.3);
+  background: #fff8ea;
+  color: #8b5700;
+  box-shadow: 0 0 0 4px rgba(173, 106, 0, 0.1);
+  animation: step-pulse 1.6s ease-in-out infinite;
+}
+
+.agent-step-blocked,
+.agent-step-failed {
+  background: rgba(185, 52, 52, 0.12);
+}
+
+.agent-step-blocked span,
+.agent-step-failed span {
+  border-color: rgba(185, 52, 52, 0.28);
+  color: var(--fail);
+}
+
+.progress-foot {
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .active-agent-card {
   position: relative;
   overflow: hidden;
@@ -1028,6 +1172,43 @@ button:disabled {
 .agent-list {
   display: grid;
   gap: 8px;
+}
+
+.agent-roster {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+  overflow: hidden;
+}
+
+.agent-roster-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+  padding: 12px;
+}
+
+.agent-roster-summary::-webkit-details-marker {
+  display: none;
+}
+
+.agent-roster-summary > span:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.agent-roster-summary small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.agent-roster .agent-list {
+  border-top: 1px solid var(--line);
+  padding: 12px;
 }
 
 .agent-row {
@@ -1630,6 +1811,28 @@ button:disabled {
   }
 }
 
+@keyframes progress-sheen {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  55%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes step-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px rgba(173, 106, 0, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 0 7px rgba(173, 106, 0, 0.04);
+  }
+}
+
 @media (max-width: 980px) {
   .workspace-grid,
   .content-grid,
@@ -1715,6 +1918,19 @@ button:disabled {
     flex-direction: column;
   }
 
+  .progress-head {
+    flex-direction: column;
+  }
+
+  .progress-percent {
+    min-width: 0;
+    width: fit-content;
+  }
+
+  .agent-step-rail {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
   .summary-actions {
     justify-content: space-between;
     width: 100%;
@@ -1736,6 +1952,9 @@ button:disabled {
 
 @media (prefers-reduced-motion: reduce) {
   .dot-starting,
+  .progress-fill::after,
+  .agent-step-running span,
+  .agent-step-starting span,
   .startup-cue span::after,
   .sprint-panel-starting .active-agent-card::after,
   .sprint-panel-starting .progress-track span {
