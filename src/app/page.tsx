@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { ArtifactTabs } from "@/components/ArtifactTabs";
 import { BlueprintPanel } from "@/components/BlueprintPanel";
 import { EvidenceLedger } from "@/components/EvidenceLedger";
@@ -237,20 +237,29 @@ export default function Home() {
       </header>
 
       <nav className="journey-strip section-rail" aria-label="Preflight workspace shortcuts">
-        {sectionRailItems.map((item) => (
-          <button
-            aria-label={`Go to ${item.title}: ${item.caption}`}
-            className={`journey-card journey-card-${item.tone}`}
-            data-target={item.targetId}
-            key={item.title}
-            onClick={() => handleSectionRailClick(item.targetId)}
-            type="button"
-          >
-            <span>{item.number}</span>
-            <strong>{item.title}</strong>
-            <small>{item.caption}</small>
-            <em>{item.status}</em>
-          </button>
+        {sectionRailItems.map((item, index) => (
+          <Fragment key={item.title}>
+            <button
+              aria-label={`Go to ${item.title}: ${item.caption}`}
+              className={`journey-card journey-card-${item.tone}`}
+              data-target={item.targetId}
+              onClick={() => handleSectionRailClick(item.targetId)}
+              type="button"
+            >
+              <span>{item.number}</span>
+              <strong>{item.title}</strong>
+              <small>{item.caption}</small>
+              <em>{item.status}</em>
+            </button>
+            {index < sectionRailItems.length - 1 ? (
+              <span className="journey-flow-arrow" aria-hidden="true">
+                <svg viewBox="0 0 16 16" focusable="false">
+                  <path d="M3 8h9" />
+                  <path d="M9 4l4 4-4 4" />
+                </svg>
+              </span>
+            ) : null}
+          </Fragment>
         ))}
       </nav>
 

@@ -102,8 +102,9 @@ a {
 
 .journey-strip {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr) 22px) minmax(0, 1fr);
+  column-gap: 0;
+  row-gap: 10px;
   margin-bottom: 16px;
 }
 
@@ -133,8 +134,45 @@ a {
   position: absolute;
   inset: 0 auto 0 0;
   width: 3px;
+  border-radius: 8px 0 0 8px;
   background: var(--accent);
   content: "";
+}
+
+.journey-flow-arrow {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  place-items: center;
+  align-self: stretch;
+  color: var(--accent-dark);
+  pointer-events: none;
+}
+
+.journey-flow-arrow::before {
+  position: absolute;
+  right: 1px;
+  left: 1px;
+  top: 50%;
+  height: 1px;
+  background: rgba(20, 124, 120, 0.24);
+  content: "";
+  transform: translateY(-50%);
+}
+
+.journey-flow-arrow svg {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
+.journey-card-locked .journey-flow-arrow {
+  color: #7a8b93;
 }
 
 .journey-card:hover,
@@ -1892,6 +1930,30 @@ button:disabled {
   .startup-cues,
   .verdict-insights {
     grid-template-columns: 1fr;
+  }
+
+  .journey-strip {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .journey-flow-arrow {
+    height: 22px;
+    width: 18px;
+    justify-self: center;
+  }
+
+  .journey-flow-arrow::before {
+    top: 1px;
+    bottom: 1px;
+    left: 50%;
+    width: 1px;
+    height: auto;
+    transform: translateX(-50%);
+  }
+
+  .journey-flow-arrow svg {
+    transform: rotate(90deg);
   }
 
   .score-row {
