@@ -852,3 +852,39 @@ Known notes:
 
 - Live web search remains an optional server-side capability. Demo mode uses seeded verified citations and labels unsourced claims as assumptions.
 - The activity logs expose reasoning summaries, not hidden chain-of-thought.
+
+## Reset Clears Workspace State - 2026-05-18
+
+What changed:
+
+- Fixed the Reset action so it clears the controlled intake fields instead of restoring the seeded demo brief.
+- Split idle run state from completed demo state:
+  - Idle runs now have empty evidence, quality issues, red-team objections, scorecard output, and artifacts.
+  - Completed/demo runs still populate the seeded evidence ledger, quality gates, red-team critique, and seven artifacts.
+- Updated Evidence Ledger, Quality Gates, Red Team, and Founder Artifacts panels to show empty states after reset instead of regenerating fallback content.
+- Mirrored the reset behavior in the static fallback.
+
+Verification:
+
+- `npm.cmd run typecheck` passed.
+- `npm.cmd run build` passed. Build emitted nonfatal Webpack cache snapshot warnings after route generation.
+- `npm.cmd run test:artifacts` passed: 2/2 tests.
+- `npm.cmd run test:multi-agent` passed: 2/2 tests.
+- `npm.cmd run test:scorecard` passed: 3/3 tests.
+- `node --check static-demo\app.js` passed.
+- Local dev server ran at `http://127.0.0.1:3001`.
+- Browser verification:
+  - Page title was `Preflight`.
+  - Loading the completed demo showed `Pivot`, 4 evidence items, `3 fail / 4 warn`, 5 red-team items, and 7 artifact tabs.
+  - Clicking Reset cleared idea, target customer, geography, and business model fields.
+  - Evidence filters reset to `All 0`, `Sources 0`, `Assumptions 0`, and `Needs validation 0`.
+  - Quality Gates showed `Not run`.
+  - Red Team showed no critique recorded.
+  - Founder Artifacts showed no generated artifacts and 0 artifact tabs.
+  - Browser console returned no warning or error logs.
+  - Desktop and 390px mobile checks reported no horizontal overflow.
+
+Known notes:
+
+- PowerShell blocked `npm.ps1` because local script execution is disabled, so verification used `npm.cmd` for equivalent npm scripts.
+- In-app browser screenshot capture timed out during this session, so verification used DOM state, console logs, and interaction evidence.

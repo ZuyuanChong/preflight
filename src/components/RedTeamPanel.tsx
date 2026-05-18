@@ -1,15 +1,8 @@
 import type { PreflightRun } from "@/types/preflight";
 
 export function RedTeamPanel({ run }: { run: PreflightRun }) {
-  const objections = run.redTeamObjections.length
-    ? run.redTeamObjections
-    : [
-        "Founders may want momentum and affirmation more than a blunt critique.",
-        "General AI research tools can imitate the workflow unless Preflight owns the quality-gated decision layer.",
-        "The willingness-to-pay story is unproven until founders pay for a report before they build.",
-        "Evidence trust breaks if assumptions and sourced claims are mixed together.",
-        "A Pivot verdict must feel useful enough that the founder still wants the artifact package."
-      ];
+  const objections = run.redTeamObjections;
+  const hasObjections = objections.length > 0;
 
   return (
     <section className="panel red-team-panel" aria-labelledby="red-team-heading">
@@ -21,14 +14,23 @@ export function RedTeamPanel({ run }: { run: PreflightRun }) {
       </div>
 
       <p className="verdict-copy">
-        Red Team is intentionally specific to {run.brief.idea}. The purpose is to raise trust by showing what could break.
+        {hasObjections
+          ? `Red Team is intentionally specific to ${run.brief.idea}. The purpose is to raise trust by showing what could break.`
+          : "Red Team critique appears after a completed preflight run."}
       </p>
 
-      <ol className="red-team-list">
-        {objections.map((objection) => (
-          <li key={objection}>{objection}</li>
-        ))}
-      </ol>
+      {hasObjections ? (
+        <ol className="red-team-list">
+          {objections.map((objection) => (
+            <li key={objection}>{objection}</li>
+          ))}
+        </ol>
+      ) : (
+        <div className="locked-state">
+          <strong>No critique recorded</strong>
+          <p>Start a sprint or load the completed demo to reveal the pressure test.</p>
+        </div>
+      )}
     </section>
   );
 }

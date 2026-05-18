@@ -1,29 +1,87 @@
-import type { AgentRun, PreflightRun, VentureBrief } from "@/types/preflight";
+import type { AgentRun, FinalVerdict, PreflightRun, VentureBrief, VentureScorecard } from "@/types/preflight";
 import { demoRun } from "@/data/demo-run";
 import { buildArtifacts } from "@/lib/artifacts";
 import { agentSprintLogLines, buildMultiAgentSystem } from "@/lib/multi-agent";
 
 export const sprintLogLines = agentSprintLogLines;
 
-export function createIdleRun(): PreflightRun {
+export const emptyBrief: VentureBrief = {
+  idea: "",
+  targetCustomer: "",
+  geography: "",
+  businessModel: "",
+  problem: "Enter a startup idea to frame the first preflight pass.",
+  solution: "",
+  assumptions: [],
+  unknowns: []
+};
+
+const emptyVerdict: FinalVerdict = {
+  decision: "Pivot",
+  rationale: "",
+  strongestWedge: "",
+  nextActions: [],
+  risks: []
+};
+
+const emptyScorecard: VentureScorecard = {
+  pain: 0,
+  buyerClarity: 0,
+  timing: 0,
+  competition: 0,
+  distribution: 0,
+  monetization: 0,
+  feasibility: 0,
+  evidenceQuality: 0,
+  redTeamSeverity: 0
+};
+
+function resetAgentsForIdle() {
+  return demoRun.agents.map((agent) => ({
+    ...agent,
+    status: "queued" as const,
+    startedAt: undefined,
+    completedAt: undefined,
+    logs: []
+  }));
+}
+
+export function createIdleRun(brief: VentureBrief = emptyBrief): PreflightRun {
   return {
     ...demoRun,
+    id: `idle-${Date.now()}`,
     status: "idle",
-    agents: demoRun.agents.map((agent) => ({
-      ...agent,
-      status: "queued",
-      startedAt: undefined,
-      completedAt: undefined,
-      logs: []
-    }))
+    brief,
+    agents: resetAgentsForIdle(),
+    multiAgentSystem: buildMultiAgentSystem({
+      brief,
+      mode: "demo",
+      evidence: [],
+      qualityIssues: [],
+      verdict: emptyVerdict,
+      redTeamObjections: []
+    }),
+    evidence: [],
+    qualityIssues: [],
+    scorecard: emptyScorecard,
+    finalVerdict: emptyVerdict,
+    redTeamObjections: [],
+    artifacts: []
   };
 }
 
 export function createRunFromBrief(brief: VentureBrief): PreflightRun {
   return {
-    ...createIdleRun(),
+    ...demoRun,
     id: `demo-${Date.now()}`,
+    status: "idle",
     brief,
+    agents: resetAgentsForIdle(),
+    evidence: demoRun.evidence,
+    qualityIssues: demoRun.qualityIssues,
+    scorecard: demoRun.scorecard,
+    finalVerdict: demoRun.finalVerdict,
+    redTeamObjections: demoRun.redTeamObjections,
     artifacts: buildArtifacts(brief, demoRun.finalVerdict),
     multiAgentSystem: buildMultiAgentSystem({
       brief,

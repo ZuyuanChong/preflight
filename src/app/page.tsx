@@ -13,6 +13,7 @@ import { demoBrief } from "@/data/demo-run";
 import {
   applySprintStep,
   createIdleRun,
+  emptyBrief,
   loadCompletedRun,
   markRunStartupFailed,
   prepareRunForSprint,
@@ -29,7 +30,7 @@ interface RunResponse {
 
 export default function Home() {
   const [brief, setBrief] = useState<VentureBrief>(demoBrief);
-  const [run, setRun] = useState<PreflightRun>(() => createIdleRun());
+  const [run, setRun] = useState<PreflightRun>(() => createIdleRun(demoBrief));
   const [step, setStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isArchitectureOpen, setArchitectureOpen] = useState(false);
@@ -163,7 +164,7 @@ export default function Home() {
     }
 
     setIsGenerating(true);
-    setRun((currentRun) => prepareRunForStartup(currentRun));
+    setRun(prepareRunForStartup(createIdleRun(brief)));
     setStep(0);
     setNotice("Initializing workspace. Agents are starting while the server prepares the venture preflight.");
 
@@ -220,14 +221,16 @@ export default function Home() {
   }
 
   function resetDemo() {
-    setBrief(demoBrief);
-    setRun(createIdleRun());
+    setBrief(emptyBrief);
+    setRun(createIdleRun(emptyBrief));
     setStep(0);
-    setNotice("Demo reset. Start Preflight will use OpenAI if the server can read OPENAI_API_KEY.");
+    setNotice("Workspace reset. Enter a new idea or load the completed demo.");
   }
 
   function loadComplete() {
-    setRun(loadCompletedRun(brief));
+    const completedBrief = brief.idea.trim() ? brief : demoBrief;
+    setBrief(completedBrief);
+    setRun(loadCompletedRun(completedBrief));
     setStep(0);
     setNotice("Loaded deterministic completed demo. Use Start Preflight for OpenAI-generated output.");
   }
@@ -310,9 +313,9 @@ export default function Home() {
           </div>
           <div className="brief-stack">
             <strong>Current ICP</strong>
-            <p>{run.brief.targetCustomer}</p>
+            <p>{brief.targetCustomer || "Not provided"}</p>
             <strong>Business model hypothesis</strong>
-            <p>{run.brief.businessModel || "Not provided"}</p>
+            <p>{brief.businessModel || "Not provided"}</p>
           </div>
         </section>
       </section>

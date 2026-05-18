@@ -6,6 +6,14 @@ const demoBrief = {
   problem: "The founder needs a pre-build read on whether this idea deserves focused build time."
 };
 
+const emptyBrief = {
+  idea: "",
+  targetCustomer: "",
+  geography: "",
+  businessModel: "",
+  problem: "Enter a startup idea to frame the first preflight pass."
+};
+
 const verdict = {
   decision: "Pivot",
   rationale:
@@ -569,8 +577,13 @@ let timer = null;
 let activeArtifact = 0;
 let evidenceFilter = "all";
 let artifactDepth = "detailed";
+let outputsVisible = false;
 
 const $ = (id) => document.getElementById(id);
+const currentEvidence = () => (outputsVisible ? evidence : []);
+const currentIssues = () => (outputsVisible ? issues : []);
+const currentRedTeam = () => (outputsVisible ? redTeam : []);
+const currentArtifacts = () => (outputsVisible ? artifactSets[artifactDepth] : []);
 
 function setFormValues(brief = demoBrief) {
   $("idea").value = brief.idea;
@@ -752,6 +765,9 @@ function renderStatus() {
   pill.className = `status-pill status-${runStatus}`;
   $("sprint").className = `panel sprint-panel sprint-panel-${runStatus}`;
   $("metricVerdict").textContent = runStatus === "complete" ? verdict.decision : "Locked";
+  $("metricSources").textContent = currentEvidence().filter((item) => item.kind === "source").length;
+  $("metricAssumptions").textContent = currentEvidence().filter((item) => item.kind === "assumption").length;
+  $("metricIssues").textContent = currentIssues().length;
   $("blueprintVerdictBadge").textContent = runStatus === "complete" ? verdict.decision : "Locked";
   $("startButton").disabled = runStatus === "running" || runStatus === "starting" || !$("idea").value.trim();
   $("completeButton").disabled = runStatus === "running" || runStatus === "starting";
@@ -776,8 +792,11 @@ function renderHeaderRail() {
   };
   const completed = agents.filter((agent) => agent.status === "complete").length;
   const progress = Math.round((completed / agents.length) * 100);
-  const sources = evidence.filter((item) => item.kind === "source").length;
-  const assumptions = evidence.filter((item) => item.kind === "assumption").length;
+  const visibleEvidence = currentEvidence();
+  const visibleIssues = currentIssues();
+  const visibleArtifacts = currentArtifacts();
+  const sources = visibleEvidence.filter((item) => item.kind === "source").length;
+  const assumptions = visibleEvidence.filter((item) => item.kind === "assumption").length;
 
   $("headerStatus").textContent = labels[runStatus] || runStatus;
   $("headerStatus").className = `status-pill status-${runStatus}`;
@@ -796,15 +815,15 @@ function renderHeaderRail() {
   applyRailTone("railSprintStatus", runStatus === "running" || runStatus === "starting" ? "active" : "ready");
 
   $("railEvidenceCaption").textContent = `${sources} sources / ${assumptions} assumptions`;
-  $("railEvidenceStatus").textContent = `${issues.length} gate issues`;
-  applyRailTone("railEvidenceStatus", issues.length > 0 ? "attention" : "ready");
+  $("railEvidenceStatus").textContent = `${visibleIssues.length} gate issues`;
+  applyRailTone("railEvidenceStatus", visibleIssues.length > 0 ? "attention" : "ready");
 
   $("railBlueprintCaption").textContent = runStatus === "complete" ? verdict.decision : "Verdict locked";
   $("railBlueprintStatus").textContent = runStatus === "complete" ? "Unlocked" : "Locked";
   applyRailTone("railBlueprintStatus", runStatus === "complete" ? "active" : "locked");
 
-  $("railArtifactsStatus").textContent = runStatus === "complete" ? "Ready" : "Preview";
-  applyRailTone("railArtifactsStatus", runStatus === "complete" ? "active" : "ready");
+  $("railArtifactsStatus").textContent = runStatus === "complete" ? "Ready" : visibleArtifacts.length ? "Preview" : "Locked";
+  applyRailTone("railArtifactsStatus", runStatus === "complete" ? "active" : visibleArtifacts.length ? "ready" : "locked");
 }
 
 function renderBlueprint() {
@@ -855,16 +874,17 @@ function renderBlueprint() {
 }
 
 function renderEvidence() {
-  const sourceCount = evidence.filter((item) => item.kind === "source").length;
-  const assumptionCount = evidence.filter((item) => item.kind === "assumption").length;
-  const needsValidationCount = evidence.filter((item) => !item.url).length;
+  const visibleEvidence = currentEvidence();
+  const sourceCount = visibleEvidence.filter((item) => item.kind === "source").length;
+  const assumptionCount = visibleEvidence.filter((item) => item.kind === "assumption").length;
+  const needsValidationCount = visibleEvidence.filter((item) => !item.url).length;
   const filters = [
-    ["all", `All ${evidence.length}`],
+    ["all", `All ${visibleEvidence.length}`],
     ["source", `Sources ${sourceCount}`],
     ["assumption", `Assumptions ${assumptionCount}`],
     ["needs-validation", `Needs validation ${needsValidationCount}`]
   ];
-  const filteredEvidence = evidence.filter((item) => {
+  const filteredEvidence = visibleEvidence.filter((item) => {
     if (evidenceFilter === "all") return true;
     if (evidenceFilter === "needs-validation") return !item.url;
     return item.kind === evidenceFilter;
@@ -874,9 +894,10 @@ function renderEvidence() {
     .map(([id, label]) => `<button class="${evidenceFilter === id ? "active" : ""}" data-evidence-filter="${id}">${label}</button>`)
     .join("");
 
-  $("evidenceTable").innerHTML = filteredEvidence
-    .map(
-      (item) => `<article class="evidence-row">
+  $("evidenceTable").innerHTML = filteredEvidence.length
+    ? filteredEvidence
+      .map(
+        (item) => `<article class="evidence-row">
         <div>
           <span class="kind-chip kind-${item.kind}">${item.kind}</span>
           <strong>${item.claim}</strong>
@@ -888,8 +909,12 @@ function renderEvidence() {
           ${item.url ? `<a href="${item.url}" target="_blank" rel="noreferrer">${item.title}</a>` : "<span>Needs validation</span>"}
         </div>
       </article>`
-    )
-    .join("");
+      )
+      .join("")
+    : `<div class="locked-state">
+        <strong>No evidence recorded</strong>
+        <p>Start a preflight or load the completed demo to populate source-backed claims and assumptions.</p>
+      </div>`;
 
   document.querySelectorAll("[data-evidence-filter]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -900,27 +925,49 @@ function renderEvidence() {
 }
 
 function renderIssues() {
-  const failCount = issues.filter(([severity]) => severity === "fail").length;
-  const warnCount = issues.filter(([severity]) => severity === "warn").length;
-  $("qualitySummary").textContent = `${failCount} fail / ${warnCount} warn`;
+  const visibleIssues = currentIssues();
+  const failCount = visibleIssues.filter(([severity]) => severity === "fail").length;
+  const warnCount = visibleIssues.filter(([severity]) => severity === "warn").length;
+  $("qualitySummary").textContent = visibleIssues.length ? `${failCount} fail / ${warnCount} warn` : "Not run";
   $("qualityBlocker").innerHTML = `<span>Trust layer</span><strong>${
-    failCount > 0 ? "Blocks Proceed until proof improves" : "Proceed allowed by current checks"
-  }</strong><p>Preflight marks weak claims before they become founder decisions.</p>`;
+    visibleIssues.length
+      ? failCount > 0
+        ? "Blocks Proceed until proof improves"
+        : "Proceed allowed by current checks"
+      : "Awaiting sprint output"
+  }</strong><p>${
+    visibleIssues.length
+      ? "Preflight marks weak claims before they become founder decisions."
+      : "Quality gates appear after a preflight run creates claims to review."
+  }</p>`;
 
-  $("issueList").innerHTML = issues
-    .map(
-      ([severity, type, message, fix]) => `<article class="issue-card severity-${severity}">
+  $("issueList").innerHTML = visibleIssues.length
+    ? visibleIssues
+      .map(
+        ([severity, type, message, fix]) => `<article class="issue-card severity-${severity}">
         <div><span>${type}</span><strong>${message}</strong></div>
         <em>${severity === "fail" ? "Blocks Proceed" : "Review before claim"}</em>
         <p>${fix}</p>
       </article>`
-    )
-    .join("");
+      )
+      .join("")
+    : `<div class="locked-state">
+        <strong>No quality issues recorded</strong>
+        <p>Run Preflight to generate claims, checks, and suggested fixes.</p>
+      </div>`;
 }
 
 function renderRedTeam() {
-  $("redTeamIntro").textContent = `Red Team is intentionally specific to ${$("idea").value}. The purpose is to raise trust by showing what could break.`;
-  $("redTeamList").innerHTML = redTeam.map((item) => `<li>${item}</li>`).join("");
+  const visibleRedTeam = currentRedTeam();
+  $("redTeamIntro").textContent = visibleRedTeam.length
+    ? `Red Team is intentionally specific to ${$("idea").value}. The purpose is to raise trust by showing what could break.`
+    : "Red Team critique appears after a completed preflight run.";
+  $("redTeamList").innerHTML = visibleRedTeam.length
+    ? visibleRedTeam.map((item) => `<li>${item}</li>`).join("")
+    : `<li class="locked-state">
+        <strong>No critique recorded</strong>
+        <p>Start a sprint or load the completed demo to reveal the pressure test.</p>
+      </li>`;
 }
 
 function renderMarkdown(markdown) {
@@ -938,7 +985,7 @@ function renderMarkdown(markdown) {
 }
 
 function renderArtifacts() {
-  const artifacts = artifactSets[artifactDepth];
+  const artifacts = currentArtifacts();
   $("depthToggle").innerHTML = [
     ["executive", "Executive Summary"],
     ["detailed", "Detailed Report"]
@@ -953,6 +1000,15 @@ function renderArtifacts() {
       ([title], index) => `<button class="${index === activeArtifact ? "active" : ""}" role="tab" aria-selected="${index === activeArtifact}" data-artifact="${index}">${title}</button>`
     )
     .join("");
+
+  if (!artifacts.length) {
+    $("artifactMeta").innerHTML = "";
+    $("artifactBody").innerHTML = `<div class="locked-state">
+      <strong>No founder artifacts generated</strong>
+      <p>Run Preflight or load the completed demo to unlock the artifact packet.</p>
+    </div>`;
+    return;
+  }
 
   const [title, status, citations, markdown] = artifacts[activeArtifact];
   $("artifactMeta").innerHTML = `<span class="severity-dot severity-${status}"></span> Quality: ${status}<span>${citations} linked evidence item(s)</span>`;
@@ -990,6 +1046,10 @@ function renderAll() {
 }
 
 function completeRun() {
+  if (!$("idea").value.trim()) {
+    setFormValues(demoBrief);
+  }
+  outputsVisible = true;
   runStatus = "complete";
   agents.forEach((agent, index) => {
     agent.status = "complete";
@@ -1020,6 +1080,7 @@ function stepSprint() {
 
 function startSprint() {
   window.clearTimeout(timer);
+  outputsVisible = true;
   resetAgents();
   startAgents();
   runStatus = "starting";
@@ -1036,8 +1097,10 @@ function resetDemo() {
   runStatus = "idle";
   currentStep = 0;
   activeArtifact = 0;
+  evidenceFilter = "all";
+  outputsVisible = false;
   resetAgents();
-  setFormValues();
+  setFormValues(emptyBrief);
   renderAll();
 }
 

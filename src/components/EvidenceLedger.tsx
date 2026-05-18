@@ -46,26 +46,33 @@ export function EvidenceLedger({ evidence }: { evidence: EvidenceItem[] }) {
       </div>
 
       <div className="evidence-table">
-        {filteredEvidence.map((item) => (
-          <article className="evidence-row" key={item.id}>
-            <div>
-              <span className={`kind-chip kind-${item.kind}`}>{item.kind}</span>
-              <strong>{item.claim}</strong>
-              <p>{item.summary}</p>
-            </div>
-            <div className="evidence-meta">
-              <span>{item.agentName}</span>
-              <span>Confidence: {item.confidence}</span>
-              {item.sourceUrl ? (
-                <a href={item.sourceUrl} target="_blank" rel="noreferrer">
-                  {item.sourceTitle}
-                </a>
-              ) : (
-                <span>Needs validation</span>
-              )}
-            </div>
-          </article>
-        ))}
+        {filteredEvidence.length ? (
+          filteredEvidence.map((item) => (
+            <article className="evidence-row" key={item.id}>
+              <div>
+                <span className={`kind-chip kind-${item.kind}`}>{item.kind}</span>
+                <strong>{item.claim}</strong>
+                <p>{item.summary}</p>
+              </div>
+              <div className="evidence-meta">
+                <span>{item.agentName}</span>
+                <span>Confidence: {item.confidence}</span>
+                {item.sourceUrl ? (
+                  <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                    {item.sourceTitle}
+                  </a>
+                ) : (
+                  <span>Needs validation</span>
+                )}
+              </div>
+            </article>
+          ))
+        ) : (
+          <div className="locked-state">
+            <strong>No evidence recorded</strong>
+            <p>Start a preflight or load the completed demo to populate source-backed claims and assumptions.</p>
+          </div>
+        )}
       </div>
     </section>
   );
